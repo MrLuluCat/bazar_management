@@ -37,7 +37,7 @@ test('Flow B: DP then Lunasi; summary remaining updates; edit/delete confirm; ov
   await expect(page.getByText('Sisa Rp 0')).toBeVisible()
 
   // Agenda summary remaining updates (no longer includes this event)
-  await page.getByRole('link', { name: 'Agenda' }).first().click()
+  await page.getByRole('main').getByRole('link', { name: 'Agenda' }).click()
   await expect(page.locator('#d-2027-05-08').getByText('Lunas')).toBeVisible()
 
   // Edit the DP down below total -> deleting needs confirm; overpay shows note.

@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ChevronLeft } from 'lucide-react'
 import { restoreEvent, useDeleteEvent, useEvent, useSetEventStatus } from '../api/events'
+import { useCreatePayment, useDeletePayment, useUpdatePayment, type PaymentInput } from '../api/payments'
+import { PaymentForm } from '../components/PaymentForm'
+import { PaymentList } from '../components/PaymentList'
+import type { PaymentRecord } from '../api/types'
+import { pb } from '../lib/pb'
 import { ContactCard } from '../components/ContactCard'
 import { DateStub } from '../components/DateStub'
 import { PaymentBar } from '../components/PaymentBar'
@@ -29,11 +34,15 @@ export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const { open } = useOverlay()
+  const { params, open, close } = useOverlay()
   const { data: e, isLoading, isError, refetch } = useEvent(id)
   const setStatus = useSetEventStatus()
   const del = useDeleteEvent()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deletingPayment, setDeletingPayment] = useState<PaymentRecord | null>(null)
+  const createPayment = useCreatePayment(id ?? '')
+  const updatePayment = useUpdatePayment(id ?? '')
+  const deletePayment = useDeletePayment(id ?? '')
 
   if (isLoading) return <SkeletonRows count={2} />
   if (isError || !e) {
@@ -49,6 +58,34 @@ export default function EventDetail() {
   const back = `/?m=${e.date.slice(0, 7)}`
   const total = e.total_cost
   const { status, overpaid } = paymentStatus(total, e.payments)
+
+  const payParam = params.get('pay')
+  const editingPayment = payParam && payParam !== 'new' && payParam !== 'lunasi' ? e.payments.find((p) => p.id === payParam) : undefined
+  const payOpen = payParam === 'new' || payParam === 'lunasi' || !!editingPayment
+  const left = remaining(total, e.payments)
+
+  const savePayment = async (values: PaymentInput) => {
+    close()
+    try {
+      if (editingPayment) await updatePayment.mutateAsync({ id: editingPayment.id, input: values })
+      else await createPayment.mutateAsync(values)
+      toast.show('Pembayaran dicatat')
+    } catch {
+      /* rollback + toast handled by the mutation */
+    }
+  }
+
+  const removePayment = async () => {
+    const target = deletingPayment
+    setDeletingPayment(null)
+    if (!target) return
+    try {
+      await deletePayment.mutateAsync(target.id)
+      toast.show('Pembayaran dihapus')
+    } catch {
+      /* rollback + toast handled by the mutation */
+    }
+  }
 
   const toggleStatus = async () => {
     try {
@@ -121,7 +158,19 @@ export default function EventDetail() {
           <span>Sisa {formatRupiah(remaining(total, e.payments))}</span>
         </div>
         {status === 'lunas' && overpaid > 0 && <p className="num text-sm text-muted">Lebih {formatRupiah(overpaid)}</p>}
-        {e.payments.length === 0 && <p className="text-sm text-muted">Belum ada pembayaran.</p>}
+        <PaymentList
+          payments={e.payments}
+          onEdit={(p) => open('pay', p.id)}
+          onDelete={setDeletingPayment}
+        />
+        <div className="flex flex-wrap gap-2 pt-1">
+          <Button onClick={() => open('pay', 'new')}>Catat pembayaran</Button>
+          {left > 0 && total > 0 && (
+            <Button variant="primary" onClick={() => open('pay', 'lunasi')}>
+              Lunasi
+            </Button>
+          )}
+        </div>
       </section>
 
       {e.expand?.contact && (
@@ -146,6 +195,25 @@ export default function EventDetail() {
         </Button>
       </div>
 
+      <PaymentForm
+        open={payOpen}
+        onClose={close}
+        title={payParam === 'lunasi' ? 'Lunasi' : undefined}
+        today={todayJakarta()}
+        initialAmount={payParam === 'lunasi' ? left : 0}
+        payment={editingPayment}
+        proofUrl={editingPayment?.proof ? pb.files.getURL(editingPayment, editingPayment.proof) : undefined}
+        onSubmit={savePayment}
+      />
+      <Dialog
+        open={!!deletingPayment}
+        onClose={() => setDeletingPayment(null)}
+        title="Hapus pembayaran?"
+        message={deletingPayment ? `Hapus pembayaran ${formatRupiah(deletingPayment.amount)}${deletingPayment.note ? ` (${deletingPayment.note})` : ''}?` : undefined}
+        confirmLabel="Hapus"
+        danger
+        onConfirm={() => void removePayment()}
+      />
       <Dialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
