@@ -6,7 +6,7 @@ export function SegmentedControl<T extends string>({
   value, onChange, options, label,
 }: { value: T; onChange: (v: T) => void; options: Option<T>[]; label: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line-strong bg-surface p-0.5">
+    <div role="radiogroup" aria-label={label} className="inline-flex w-fit self-start rounded-md border border-line-strong bg-surface p-0.5">
       {options.map((o) => {
         const on = o.value === value
         return (

@@ -1,11 +1,11 @@
-import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import type { ComponentPropsWithRef, InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 import { cn } from '../../lib/cn'
 
 export const controlClass =
   'w-full min-h-[44px] rounded-md border border-line-strong bg-surface px-3 text-sm text-ink placeholder:text-muted ' +
   'transition-colors duration-150 focus-visible:border-accent disabled:opacity-50 aria-[invalid=true]:border-unpaid'
 
-export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
+export function Input({ className, ...rest }: ComponentPropsWithRef<'input'>) {
   return <input {...rest} className={cn(controlClass, className)} />
 }
 

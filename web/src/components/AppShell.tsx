@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { Plus } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useShortcuts } from '../hooks/useShortcuts'
 import { useOnline } from '../hooks/useOnline'
 import { useOverlay } from '../hooks/useOverlay'
 import { useWorkspace } from '../api/workspace'
@@ -21,9 +22,10 @@ export function AppShell() {
   const ws = useWorkspace()
   const { pathname } = useLocation()
   const { params, open } = useOverlay()
-  if (!isAuthed) return <Navigate to="/unlock" replace />
   const sel = params.get('sel')
   const add = () => open('new', 'event', sel && pathname === '/' ? { date: sel } : {})
+  useShortcuts({ n: () => CAN_ADD(pathname) && online && add() })
+  if (!isAuthed) return <Navigate to="/unlock" replace />
   return (
     <div className="flex min-h-dvh">
       <SideRail />
@@ -32,7 +34,7 @@ export function AppShell() {
         <header className="sticky top-0 z-20 flex min-h-[52px] items-center justify-between gap-3 border-b border-line bg-paper px-4 pt-[env(safe-area-inset-top)]">
           <span className="truncate text-base font-semibold">{ws.data?.name ?? ' '}</span>
           {CAN_ADD(pathname) && (
-            <Button variant="primary" write onClick={add} className="hidden lg:inline-flex">
+            <Button variant="primary" write onClick={add} className="max-lg:hidden">
               <Plus size={18} strokeWidth={1.5} aria-hidden />
               Tambah event
             </Button>

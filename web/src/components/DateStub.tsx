@@ -7,7 +7,7 @@ import { formatDateLabel, weekdayShort } from '../lib/dates'
 export function DateStub({ date, today, as: Tag = 'h2' }: { date: string; today?: boolean; as?: 'h2' | 'div' }) {
   const [y, m, d] = date.split('-').map(Number)
   return (
-    <Tag aria-label={formatDateLabel(date)} className="flex w-14 shrink-0 flex-col items-center pt-1 font-normal tracking-normal">
+    <Tag aria-label={formatDateLabel(date)} role={Tag === "div" ? "group" : undefined} className="flex w-14 shrink-0 flex-col items-center pt-1 font-normal tracking-normal">
       <span aria-hidden className="text-xs font-semibold uppercase tracking-wide text-muted">
         {weekdayShort(date)}
       </span>

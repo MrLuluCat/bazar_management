@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Search } from 'lucide-react'
 import { useMonthEvents } from '../api/events'
@@ -6,13 +6,14 @@ import type { EventWithPayments } from '../api/types'
 import { CalendarGrid } from '../components/CalendarGrid'
 import { Sheet } from '../components/ui/Sheet'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
+import { useShortcuts } from '../hooks/useShortcuts'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { useOverlay } from '../hooks/useOverlay'
 import { getView, setView as storeView, type View } from '../lib/viewPref'
 import { DateStub } from '../components/DateStub'
 import { EventRow } from '../components/EventRow'
 import { FilterChips } from '../components/FilterChips'
-import { MonthHeader } from '../components/MonthHeader'
+import { MonthHeader, shiftMonth } from '../components/MonthHeader'
 import { SummaryStrip } from '../components/SummaryStrip'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -87,6 +88,13 @@ export default function Agenda() {
     setMonth(today.slice(0, 7))
     setScrollToToday((n) => n + 1)
   }
+  const searchRef = useRef<HTMLInputElement>(null)
+  useShortcuts({
+    ArrowLeft: () => setMonth(shiftMonth(ym, -1)),
+    ArrowRight: () => setMonth(shiftMonth(ym, 1)),
+    t: goToday,
+    '/': () => searchRef.current?.focus(),
+  })
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
@@ -121,7 +129,7 @@ export default function Agenda() {
         <FilterChips value={chip} onChange={setChip} />
         <div className="relative">
           <Search aria-hidden size={18} strokeWidth={1.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-          <Input type="search" aria-label="Cari" placeholder="Cari judul, lokasi, kontak" value={q} onChange={(e) => setQ(e.target.value)} className="pl-10" />
+          <Input ref={searchRef} type="search" aria-label="Cari" placeholder="Cari judul, lokasi, kontak" value={q} onChange={(e) => setQ(e.target.value)} className="pl-10" />
         </div>
       </div>
 
