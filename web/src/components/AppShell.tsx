@@ -16,9 +16,10 @@ export function AppShell() {
   const { isAuthed } = useAuth()
   const ws = useWorkspace()
   const { pathname } = useLocation()
-  const { open } = useOverlay()
+  const { params, open } = useOverlay()
   if (!isAuthed) return <Navigate to="/unlock" replace />
-  const add = () => open('new', 'event')
+  const sel = params.get('sel')
+  const add = () => open('new', 'event', sel && pathname === '/' ? { date: sel } : {})
   return (
     <div className="flex min-h-dvh">
       <SideRail />

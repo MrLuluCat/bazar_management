@@ -2,6 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Search } from 'lucide-react'
 import { useMonthEvents } from '../api/events'
+import type { EventWithPayments } from '../api/types'
+import { CalendarGrid } from '../components/CalendarGrid'
+import { Sheet } from '../components/ui/Sheet'
+import { SegmentedControl } from '../components/ui/SegmentedControl'
+import { useMediaQuery } from '../hooks/useMediaQuery'
+import { useOverlay } from '../hooks/useOverlay'
+import { getView, setView as storeView, type View } from '../lib/viewPref'
 import { DateStub } from '../components/DateStub'
 import { EventRow } from '../components/EventRow'
 import { FilterChips } from '../components/FilterChips'
@@ -12,7 +19,7 @@ import { Input } from '../components/ui/Input'
 import { SkeletonRows } from '../components/ui/Skeleton'
 import { filterEvents, type Chip } from '../lib/agenda'
 import { cn } from '../lib/cn'
-import { groupByDate, todayJakarta } from '../lib/dates'
+import { formatDayMonth, groupByDate, todayJakarta } from '../lib/dates'
 import { monthSummary } from '../lib/payment'
 
 export default function Agenda() {
@@ -23,10 +30,29 @@ export default function Agenda() {
   const [q, setQ] = useState('')
   const [scrollToToday, setScrollToToday] = useState(0)
   const { data, isLoading, isError, refetch } = useMonthEvents(ym)
+  const [view, setViewState] = useState<View>(getView)
+  const desktop = useMediaQuery('(min-width: 1024px)')
+  const { open } = useOverlay()
+  const sel = params.get('sel')
+  const changeView = (v: View) => {
+    setViewState(v)
+    storeView(v)
+  }
+  const select = (date: string) => {
+    const p = new URLSearchParams(params)
+    p.set('sel', date)
+    setParams(p, { replace: true })
+  }
+  const clearSel = () => {
+    const p = new URLSearchParams(params)
+    p.delete('sel')
+    setParams(p, { replace: true })
+  }
 
   const setMonth = (next: string) => {
     const p = new URLSearchParams(params)
     p.set('m', next)
+    p.delete('sel')
     setParams(p, { replace: true })
   }
   const openNew = () => {
@@ -66,6 +92,31 @@ export default function Agenda() {
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
       <MonthHeader ym={ym} onChange={setMonth} onToday={goToday} />
       <SummaryStrip count={summary.count} totalCost={summary.totalCost} totalRemaining={summary.totalRemaining} />
+      <SegmentedControl
+        label="Tampilan"
+        value={view}
+        onChange={changeView}
+        options={[
+          { value: 'agenda', label: 'Agenda' },
+          { value: 'kalender', label: 'Kalender' },
+        ]}
+      />
+      {view === 'kalender' && (
+        <div className="lg:grid lg:grid-cols-[1fr_22rem] lg:items-start lg:gap-6">
+          <CalendarGrid ym={ym} events={events} selectedDate={sel} onSelect={select} />
+          {desktop && (
+            <section role="region" aria-label={sel ? `Event ${formatDayMonth(sel)}` : 'Event hari terpilih'} className="rounded-lg border border-line p-3">
+              <DayEvents date={sel} events={events} onAdd={(d) => open('new', 'event', { date: d })} />
+            </section>
+          )}
+        </div>
+      )}
+      {view === 'kalender' && !desktop && (
+        <Sheet open={!!sel} onClose={clearSel} title={sel ? `Event ${formatDayMonth(sel)}` : 'Event'}>
+          <DayEvents date={sel} events={events} onAdd={(d) => open('new', 'event', { date: d })} />
+        </Sheet>
+      )}
+      {view === 'agenda' && (<>
       <div className="flex flex-col gap-3">
         <FilterChips value={chip} onChange={setChip} />
         <div className="relative">
@@ -106,6 +157,25 @@ export default function Agenda() {
           </section>
         ))}
       </div>
+      </>)}
+    </div>
+  )
+}
+
+function DayEvents({ date, events, onAdd }: { date: string | null; events: EventWithPayments[]; onAdd: (date: string) => void }) {
+  if (!date) return <p className="text-sm text-muted">Pilih tanggal untuk melihat event.</p>
+  const list = events.filter((e) => e.date === date)
+  return (
+    <div className="flex flex-col gap-2">
+      {list.length === 0 && <p className="text-sm text-muted">Tidak ada event.</p>}
+      <div>
+        {list.map((e) => (
+          <EventRow key={e.id} event={e} />
+        ))}
+      </div>
+      <Button onClick={() => onAdd(date)} className="self-start">
+        Tambah event di tanggal ini
+      </Button>
     </div>
   )
 }
