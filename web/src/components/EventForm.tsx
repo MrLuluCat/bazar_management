@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { ContactRecord } from '../api/types'
+import { RepeatFields, emptyRepeat, selectedDates, type RepeatValue } from './RepeatFields'
 import { ContactPicker, validateDraft, type ContactChoice } from './ContactPicker'
 import { eventSchema, type EventFormValues } from '../lib/eventSchema'
 import { Button } from './ui/Button'
@@ -19,7 +20,7 @@ type Props = {
   locations: string[]
   contacts?: ContactRecord[]
   initialContact?: string
-  onSubmit: (values: EventFormValues, contact: ContactChoice) => Promise<void>
+  onSubmit: (values: EventFormValues, contact: ContactChoice, repeatDates: string[] | null) => Promise<void>
   /** Extra fields (contact picker, repeat) rendered before notes. */
   children?: React.ReactNode
 }
@@ -31,6 +32,7 @@ const empty = (date: string): EventFormValues => ({
 export function EventForm({ open, onClose, initial, defaultDate, locations, contacts = [], initialContact = '', onSubmit, children }: Props) {
   const editing = !!initial
   const [v, setV] = useState<EventFormValues>({ ...empty(defaultDate), ...initial })
+  const [repeat, setRepeat] = useState<RepeatValue>(emptyRepeat)
   const [choice, setChoice] = useState<ContactChoice>({ id: initialContact })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
@@ -41,6 +43,7 @@ export function EventForm({ open, onClose, initial, defaultDate, locations, cont
     if (open) {
       setV({ ...empty(defaultDate), ...initial })
       setChoice({ id: initialContact })
+      setRepeat(emptyRepeat)
       setErrors({})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,12 +57,14 @@ export function EventForm({ open, onClose, initial, defaultDate, locations, cont
     const parsed = eventSchema.safeParse(v)
     const next: Record<string, string> = validateDraft(choice)
     if (!parsed.success) for (const issue of parsed.error.issues) next[String(issue.path[0])] ??= issue.message
+    const dates = !editing && repeat.enabled ? selectedDates(v.date, repeat) : null
+    if (dates && dates.length === 0) next.until = 'Pilih tanggal akhir setelah tanggal mulai'
     setErrors(next)
     if (!parsed.success || Object.keys(next).length > 0) return
     inFlight.current = true
     setSaving(true)
     try {
-      await onSubmit(parsed.data, choice)
+      await onSubmit(parsed.data, choice, dates)
     } finally {
       inFlight.current = false
       setSaving(false)
@@ -101,6 +106,7 @@ export function EventForm({ open, onClose, initial, defaultDate, locations, cont
           ))}
         </datalist>
         <ContactPicker contacts={contacts} value={choice} onChange={setChoice} errors={errors} />
+        {!editing && <RepeatFields startDate={v.date} value={repeat} onChange={setRepeat} error={errors.until} />}
         {children}
         <Field label="Biaya booth" error={errors.total_cost}>
           <RupiahInput value={v.total_cost} onChange={(n) => set('total_cost', n)} />

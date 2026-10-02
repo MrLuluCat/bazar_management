@@ -3,6 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { ChevronLeft } from 'lucide-react'
 import { restoreEvent, useDeleteEvent, useEvent, useSetEventStatus } from '../api/events'
 import { useCreatePayment, useDeletePayment, useUpdatePayment, type PaymentInput } from '../api/payments'
+import { useDeleteSeries, useDuplicateEvent } from '../api/series'
+import { DuplicateSheet } from '../components/DuplicateSheet'
+import { SeriesScopeDialog, type SeriesScope } from '../components/SeriesScopeDialog'
 import { PaymentForm } from '../components/PaymentForm'
 import { PaymentList } from '../components/PaymentList'
 import type { PaymentRecord } from '../api/types'
@@ -40,6 +43,8 @@ export default function EventDetail() {
   const del = useDeleteEvent()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deletingPayment, setDeletingPayment] = useState<PaymentRecord | null>(null)
+  const duplicate = useDuplicateEvent()
+  const delSeries = useDeleteSeries()
   const createPayment = useCreatePayment(id ?? '')
   const updatePayment = useUpdatePayment(id ?? '')
   const deletePayment = useDeletePayment(id ?? '')
@@ -84,6 +89,29 @@ export default function EventDetail() {
       toast.show('Pembayaran dihapus')
     } catch {
       /* rollback + toast handled by the mutation */
+    }
+  }
+
+  const dupOpen = params.get('dup') === '1'
+  const submitDuplicate = async (dates: string[]) => {
+    try {
+      const made = await duplicate.mutateAsync({ source: e, dates })
+      toast.show(`${made.length} event dibuat`)
+      navigate(`/?m=${dates[0].slice(0, 7)}&f=${dates[0]}`, { replace: true })
+    } catch (err) {
+      const created = (err as { created?: number }).created ?? 0
+      toast.show(created > 0 ? `Hanya ${created} event berhasil dibuat.` : 'Gagal menyimpan. Coba lagi.')
+    }
+  }
+
+  const removeSeries = async (scope: SeriesScope) => {
+    setConfirmDelete(false)
+    try {
+      await delSeries.mutateAsync({ event: e, scope })
+      navigate(back, { replace: true })
+      toast.show('Event dihapus')
+    } catch {
+      toast.show('Gagal menghapus. Coba lagi.')
     }
   }
 
@@ -184,9 +212,7 @@ export default function EventDetail() {
 
       <div className="flex flex-wrap gap-2 border-t border-line pt-4">
         <Button onClick={() => open('edit', e.id)}>Edit</Button>
-        <Button disabled title="Segera hadir">
-          Duplikat
-        </Button>
+        <Button onClick={() => open('dup', '1')}>Duplikat</Button>
         <Button onClick={() => void toggleStatus()} loading={setStatus.isPending}>
           {cancelled ? 'Aktifkan' : 'Batalkan'}
         </Button>
@@ -214,8 +240,17 @@ export default function EventDetail() {
         danger
         onConfirm={() => void removePayment()}
       />
+      <DuplicateSheet open={dupOpen} onClose={close} initialMonth={e.date.slice(0, 7)} onSubmit={submitDuplicate} />
+      <SeriesScopeDialog
+        open={confirmDelete && !!e.series_id}
+        onClose={() => setConfirmDelete(false)}
+        title="Hapus event berulang"
+        message={`Hapus '${e.title}' ${formatDayMonth(e.date)}?`}
+        danger
+        onChoose={(scope) => void removeSeries(scope)}
+      />
       <Dialog
-        open={confirmDelete}
+        open={confirmDelete && !e.series_id}
         onClose={() => setConfirmDelete(false)}
         title="Hapus event?"
         message={`Hapus '${e.title}' ${formatDayMonth(e.date)}? Pembayaran ikut terhapus.`}
