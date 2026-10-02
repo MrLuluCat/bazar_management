@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import type { ContactRecord } from '../api/types'
+import { ContactPicker, validateDraft, type ContactChoice } from './ContactPicker'
 import { eventSchema, type EventFormValues } from '../lib/eventSchema'
 import { Button } from './ui/Button'
 import { DatePicker } from './ui/DatePicker'
@@ -15,7 +17,9 @@ type Props = {
   initial?: Partial<EventFormValues>
   defaultDate: string
   locations: string[]
-  onSubmit: (values: EventFormValues) => Promise<void>
+  contacts?: ContactRecord[]
+  initialContact?: string
+  onSubmit: (values: EventFormValues, contact: ContactChoice) => Promise<void>
   /** Extra fields (contact picker, repeat) rendered before notes. */
   children?: React.ReactNode
 }
@@ -24,9 +28,10 @@ const empty = (date: string): EventFormValues => ({
   title: '', date, start_time: '', end_time: '', location: '', total_cost: 0, notes: '', status: 'active',
 })
 
-export function EventForm({ open, onClose, initial, defaultDate, locations, onSubmit, children }: Props) {
+export function EventForm({ open, onClose, initial, defaultDate, locations, contacts = [], initialContact = '', onSubmit, children }: Props) {
   const editing = !!initial
   const [v, setV] = useState<EventFormValues>({ ...empty(defaultDate), ...initial })
+  const [choice, setChoice] = useState<ContactChoice>({ id: initialContact })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const inFlight = useRef(false)
@@ -35,10 +40,11 @@ export function EventForm({ open, onClose, initial, defaultDate, locations, onSu
   useEffect(() => {
     if (open) {
       setV({ ...empty(defaultDate), ...initial })
+      setChoice({ id: initialContact })
       setErrors({})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initial?.title, defaultDate])
+  }, [open, initial?.title, defaultDate, initialContact])
 
   const set = <K extends keyof EventFormValues>(k: K, val: EventFormValues[K]) => setV((p) => ({ ...p, [k]: val }))
 
@@ -46,17 +52,14 @@ export function EventForm({ open, onClose, initial, defaultDate, locations, onSu
     e.preventDefault()
     if (inFlight.current) return
     const parsed = eventSchema.safeParse(v)
-    if (!parsed.success) {
-      const next: Record<string, string> = {}
-      for (const issue of parsed.error.issues) next[String(issue.path[0])] ??= issue.message
-      setErrors(next)
-      return
-    }
-    setErrors({})
+    const next: Record<string, string> = validateDraft(choice)
+    if (!parsed.success) for (const issue of parsed.error.issues) next[String(issue.path[0])] ??= issue.message
+    setErrors(next)
+    if (!parsed.success || Object.keys(next).length > 0) return
     inFlight.current = true
     setSaving(true)
     try {
-      await onSubmit(parsed.data)
+      await onSubmit(parsed.data, choice)
     } finally {
       inFlight.current = false
       setSaving(false)
@@ -97,6 +100,7 @@ export function EventForm({ open, onClose, initial, defaultDate, locations, onSu
             <option key={l} value={l} />
           ))}
         </datalist>
+        <ContactPicker contacts={contacts} value={choice} onChange={setChoice} errors={errors} />
         {children}
         <Field label="Biaya booth" error={errors.total_cost}>
           <RupiahInput value={v.total_cost} onChange={(n) => set('total_cost', n)} />

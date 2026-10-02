@@ -5,7 +5,7 @@ export function useOverlay() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
 
-  const open = (key: 'new' | 'edit', value: string, extra: Record<string, string> = {}) => {
+  const open = (key: 'new' | 'edit' | 'editContact', value: string, extra: Record<string, string> = {}) => {
     const p = new URLSearchParams(params)
     p.set(key, value)
     for (const [k, v] of Object.entries(extra)) p.set(k, v)
@@ -19,7 +19,7 @@ export function useOverlay() {
       return
     }
     const p = new URLSearchParams(params)
-    for (const k of ['new', 'edit', 'date']) p.delete(k)
+    for (const k of ['new', 'edit', 'editContact', 'date']) p.delete(k)
     setParams(p, { replace: true })
   }
 

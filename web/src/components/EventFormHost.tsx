@@ -1,4 +1,7 @@
 import { useNavigate, useLocation } from 'react-router'
+import { useContacts, useCreateContact } from '../api/contacts'
+import { normalizePhone } from '../lib/phone'
+import type { ContactChoice } from './ContactPicker'
 import { useCreateEvent, useEvent, usePastLocations, useUpdateEvent } from '../api/events'
 import { useWorkspace } from '../api/workspace'
 import { useOverlay } from '../hooks/useOverlay'
@@ -16,6 +19,8 @@ export function EventFormHost() {
   const locations = usePastLocations()
   const create = useCreateEvent(ws.data?.id)
   const update = useUpdateEvent()
+  const contacts = useContacts()
+  const createContact = useCreateContact(ws.data?.id)
 
   const editId = params.get('edit')
   const isNew = params.get('new') === 'event'
@@ -30,16 +35,23 @@ export function EventFormHost() {
       }
     : undefined
 
-  const submit = async (values: EventFormValues) => {
+  const submit = async (values: EventFormValues, choice: ContactChoice) => {
     try {
+      let contact = choice.id
+      if (choice.draft) {
+        const phone = normalizePhone(choice.draft.phone)
+        if (!phone) throw new Error('phone')
+        const created = await createContact.mutateAsync({ name: choice.draft.name.trim(), phone, organization: '', notes: '' })
+        contact = created.id
+      }
       if (editId) {
-        await update.mutateAsync({ id: editId, patch: values })
+        await update.mutateAsync({ id: editId, patch: { ...values, contact } })
         toast.show('Event disimpan')
         const p = new URLSearchParams(location.search)
         p.delete('edit')
         navigate({ pathname: location.pathname, search: p.toString() }, { replace: true })
       } else {
-        await create.mutateAsync(values)
+        await create.mutateAsync({ ...values, contact })
         toast.show('Event ditambahkan')
         navigate(`/?m=${values.date.slice(0, 7)}&f=${values.date}`, { replace: true })
       }
@@ -55,6 +67,8 @@ export function EventFormHost() {
       initial={editId ? initial : undefined}
       defaultDate={defaultDate}
       locations={locations.data ?? []}
+      contacts={contacts.data ?? []}
+      initialContact={editId ? (editing.data?.contact ?? '') : ''}
       onSubmit={submit}
     />
   )

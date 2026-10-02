@@ -10,6 +10,14 @@ const styles: Record<Variant, string> = {
   ghost: 'bg-transparent text-ink border-transparent hover:bg-accent-wash',
 }
 
+export const buttonClass = (variant: Variant = 'secondary', extra?: string) =>
+  cn(
+    'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium no-underline transition-colors duration-150',
+    'disabled:cursor-not-allowed disabled:opacity-50',
+    styles[variant],
+    extra,
+  )
+
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant
   loading?: boolean
@@ -26,12 +34,7 @@ export function Button({ variant = 'secondary', loading, disabled, disabledReaso
       disabled={off}
       aria-busy={loading || undefined}
       title={off && disabledReason ? disabledReason : title}
-      className={cn(
-        'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium transition-colors duration-150',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        styles[variant],
-        className,
-      )}
+      className={buttonClass(variant, className)}
     >
       {children}
     </button>

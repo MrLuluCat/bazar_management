@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ChevronLeft } from 'lucide-react'
 import { restoreEvent, useDeleteEvent, useEvent, useSetEventStatus } from '../api/events'
+import { ContactCard } from '../components/ContactCard'
 import { DateStub } from '../components/DateStub'
 import { PaymentBar } from '../components/PaymentBar'
 import { StatusBadge } from '../components/StatusBadge'
@@ -122,6 +123,15 @@ export default function EventDetail() {
         {status === 'lunas' && overpaid > 0 && <p className="num text-sm text-muted">Lebih {formatRupiah(overpaid)}</p>}
         {e.payments.length === 0 && <p className="text-sm text-muted">Belum ada pembayaran.</p>}
       </section>
+
+      {e.expand?.contact && (
+        <section aria-labelledby="pj-h" className="flex flex-col gap-2">
+          <h2 id="pj-h" className="text-lg">
+            Penanggung jawab
+          </h2>
+          <ContactCard contact={e.expand.contact} link />
+        </section>
+      )}
 
       <div className="flex flex-wrap gap-2 border-t border-line pt-4">
         <Button onClick={() => open('edit', e.id)}>Edit</Button>

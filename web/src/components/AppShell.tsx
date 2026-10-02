@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useOverlay } from '../hooks/useOverlay'
 import { useWorkspace } from '../api/workspace'
 import { BottomNav } from './BottomNav'
+import { ContactFormHost } from './ContactFormHost'
 import { EventFormHost } from './EventFormHost'
 import { SideRail } from './SideRail'
 import { Button } from './ui/Button'
@@ -48,6 +49,7 @@ export function AppShell() {
       )}
       <BottomNav />
       <EventFormHost />
+      <ContactFormHost />
       <Toaster />
     </div>
   )
