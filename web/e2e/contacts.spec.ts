@@ -48,8 +48,7 @@ test('contact list is alphabetical and searchable', async ({ page }) => {
   const names = await page.getByRole('listitem').allInnerTexts()
   await expect(page.getByText('Bu Rina')).toBeVisible()
   expect(names.length).toBeGreaterThanOrEqual(4)
-  const first = names.map((n) => n.split('
-')[0])
+  const first = names.map((n) => n.split(/\r?\n/)[0])
   expect(first).toEqual([...first].sort((a, b) => a.localeCompare(b)))
   await page.getByRole('searchbox').fill('budi')
   await expect(page.getByText('Pak Budi')).toBeVisible()
