@@ -1,0 +1,22 @@
+[Unit]
+Description=Bazar Manager (PocketBase)
+After=network.target
+
+[Service]
+Type=simple
+User=bazar
+Group=bazar
+WorkingDirectory=/opt/bazar
+# pb_public/, pb_migrations/ and pb_data/ are resolved next to the binary.
+ExecStart=/opt/bazar/pocketbase serve --http=127.0.0.1:8090
+Restart=always
+RestartSec=3
+LimitNOFILE=4096
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/bazar
+
+[Install]
+WantedBy=multi-user.target
