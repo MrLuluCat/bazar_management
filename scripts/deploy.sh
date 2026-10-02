@@ -5,7 +5,7 @@
 set -euo pipefail
 
 : "${DEPLOY_HOST:?set DEPLOY_HOST, e.g. deploy@vps.example.com}"
-: "${VITE_GROUP_EMAIL:?set VITE_GROUP_EMAIL (the group user's email, baked into the build)}"
+: "${VITE_GROUP_EMAIL:?set VITE_GROUP_EMAIL (email of the group user, baked into the build)}"
 REMOTE_DIR="${REMOTE_DIR:-/opt/bazar}"
 HEALTH_URL="${HEALTH_URL:-https://bazar.nasfcakes.cloud/api/health}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
