@@ -5,7 +5,7 @@ import path from 'node:path'
 // @ts-expect-error plain JS module without types
 import { adminLogin, bootstrap } from '../../scripts/bootstrap.js'
 
-const ROOT = path.resolve(__dirname, '../..')
+const ROOT = path.resolve(import.meta.dirname, '../..')
 const BIN = path.join(ROOT, '.pb', process.platform === 'win32' ? 'pocketbase.exe' : 'pocketbase')
 export const ADMIN = { email: 'admin@test.local', password: 'admin-password-123' }
 
