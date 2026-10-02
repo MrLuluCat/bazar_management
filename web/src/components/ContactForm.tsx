@@ -54,7 +54,7 @@ export function ContactForm({ open, onClose, initial, onSubmit }: Props) {
       onClose={onClose}
       title={initial ? 'Ubah kontak' : 'Tambah kontak'}
       footer={
-        <Button type="submit" form="contact-form" variant="primary" className="w-full" loading={saving}>
+        <Button type="submit" form="contact-form" variant="primary" write className="w-full" loading={saving}>
           Simpan
         </Button>
       }

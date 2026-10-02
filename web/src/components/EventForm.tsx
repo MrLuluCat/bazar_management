@@ -77,7 +77,7 @@ export function EventForm({ open, onClose, initial, defaultDate, locations, cont
       onClose={onClose}
       title={editing ? 'Ubah event' : 'Tambah event'}
       footer={
-        <Button type="submit" form="event-form" variant="primary" className="w-full" loading={saving}>
+        <Button type="submit" form="event-form" variant="primary" write className="w-full" loading={saving}>
           Simpan
         </Button>
       }

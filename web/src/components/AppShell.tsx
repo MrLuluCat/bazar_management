@@ -1,8 +1,11 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { Plus } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useOnline } from '../hooks/useOnline'
 import { useOverlay } from '../hooks/useOverlay'
 import { useWorkspace } from '../api/workspace'
+import { OfflineBanner } from './OfflineBanner'
+import { UpdatePrompt } from './UpdatePrompt'
 import { BottomNav } from './BottomNav'
 import { ContactFormHost } from './ContactFormHost'
 import { EventFormHost } from './EventFormHost'
@@ -14,6 +17,7 @@ const CAN_ADD = (path: string) => path === '/' || path.startsWith('/event/')
 
 export function AppShell() {
   const { isAuthed } = useAuth()
+  const online = useOnline()
   const ws = useWorkspace()
   const { pathname } = useLocation()
   const { params, open } = useOverlay()
@@ -24,10 +28,11 @@ export function AppShell() {
     <div className="flex min-h-dvh">
       <SideRail />
       <div className="flex min-w-0 flex-1 flex-col">
+        <OfflineBanner />
         <header className="sticky top-0 z-20 flex min-h-[52px] items-center justify-between gap-3 border-b border-line bg-paper px-4 pt-[env(safe-area-inset-top)]">
           <span className="truncate text-base font-semibold">{ws.data?.name ?? ' '}</span>
           {CAN_ADD(pathname) && (
-            <Button variant="primary" onClick={add} className="hidden lg:inline-flex">
+            <Button variant="primary" write onClick={add} className="hidden lg:inline-flex">
               <Plus size={18} strokeWidth={1.5} aria-hidden />
               Tambah event
             </Button>
@@ -41,8 +46,10 @@ export function AppShell() {
         <button
           type="button"
           aria-label="Tambah event"
+          disabled={!online}
+          title={online ? undefined : 'Butuh koneksi internet'}
           onClick={add}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-lg bg-accent text-accent-ink lg:hidden"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-lg bg-accent text-accent-ink disabled:opacity-50 lg:hidden"
           style={{ boxShadow: 'var(--shadow-sheet)' }}
         >
           <Plus size={26} strokeWidth={1.5} aria-hidden />
@@ -51,6 +58,7 @@ export function AppShell() {
       <BottomNav />
       <EventFormHost />
       <ContactFormHost />
+      <UpdatePrompt />
       <Toaster />
     </div>
   )

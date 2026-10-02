@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { RouterProvider } from 'react-router'
-import { queryClient } from './lib/queryClient'
+import { MAX_AGE, persister, queryClient } from './lib/queryClient'
 import { refreshAuth } from './lib/pb'
 import { applyTheme, getTheme } from './lib/theme'
 import { router } from './router'
@@ -14,8 +14,8 @@ export default function App() {
   }, [])
   if (!ready) return <h1 className="sr-only">Bazar</h1>
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: MAX_AGE, buster: __APP_VERSION__ }}>
       <RouterProvider router={router} />
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   )
 }

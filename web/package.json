@@ -9,7 +9,8 @@
     "preview": "vite preview --port 4173",
     "test": "vitest run",
     "test:rules": "vitest run --config vitest.rules.config.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:pwa": "playwright test -c playwright.pwa.config.ts"
   },
   "dependencies": {
     "@tanstack/query-async-storage-persister": "^5.104.1",

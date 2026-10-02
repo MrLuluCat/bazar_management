@@ -1,4 +1,5 @@
 import PocketBase from 'pocketbase'
+import { clearLocalData } from './queryClient'
 
 export const pb = new PocketBase(window.location.origin)
 pb.autoCancellation(false)
@@ -12,6 +13,7 @@ export async function unlock(passcode: string): Promise<void> {
 
 export function lock(): void {
   pb.authStore.clear()
+  void clearLocalData()
 }
 
 /** Refresh the stored token on app start. Returns whether the session is (still) valid. */

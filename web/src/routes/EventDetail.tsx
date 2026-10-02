@@ -192,9 +192,9 @@ export default function EventDetail() {
           onDelete={setDeletingPayment}
         />
         <div className="flex flex-wrap gap-2 pt-1">
-          <Button onClick={() => open('pay', 'new')}>Catat pembayaran</Button>
+          <Button write onClick={() => open('pay', 'new')}>Catat pembayaran</Button>
           {left > 0 && total > 0 && (
-            <Button variant="primary" onClick={() => open('pay', 'lunasi')}>
+            <Button variant="primary" write onClick={() => open('pay', 'lunasi')}>
               Lunasi
             </Button>
           )}
@@ -211,12 +211,12 @@ export default function EventDetail() {
       )}
 
       <div className="flex flex-wrap gap-2 border-t border-line pt-4">
-        <Button onClick={() => open('edit', e.id)}>Edit</Button>
-        <Button onClick={() => open('dup', '1')}>Duplikat</Button>
-        <Button onClick={() => void toggleStatus()} loading={setStatus.isPending}>
+        <Button write onClick={() => open('edit', e.id)}>Edit</Button>
+        <Button write onClick={() => open('dup', '1')}>Duplikat</Button>
+        <Button write onClick={() => void toggleStatus()} loading={setStatus.isPending}>
           {cancelled ? 'Aktifkan' : 'Batalkan'}
         </Button>
-        <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+        <Button variant="danger" write onClick={() => setConfirmDelete(true)}>
           Hapus
         </Button>
       </div>

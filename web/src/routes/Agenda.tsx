@@ -137,7 +137,7 @@ export default function Agenda() {
       {!isLoading && !isError && events.length === 0 && (
         <div className="flex flex-col items-start gap-3 py-6">
           <p className="text-sm text-muted">Belum ada event bulan ini.</p>
-          <Button variant="primary" onClick={openNew}>
+          <Button variant="primary" write onClick={openNew}>
             Tambah event
           </Button>
         </div>

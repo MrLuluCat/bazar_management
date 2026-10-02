@@ -74,7 +74,7 @@ export function PaymentForm({ open, onClose, title, today, initialAmount = 0, pa
       onClose={onClose}
       title={title ?? (payment ? 'Ubah pembayaran' : 'Catat pembayaran')}
       footer={
-        <Button type="submit" form="payment-form" variant="primary" className="w-full" loading={saving}>
+        <Button type="submit" form="payment-form" variant="primary" write className="w-full" loading={saving}>
           Simpan
         </Button>
       }

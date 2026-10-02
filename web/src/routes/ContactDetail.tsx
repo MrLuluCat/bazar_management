@@ -75,8 +75,8 @@ export default function ContactDetail() {
       </section>
 
       <div className="flex flex-wrap gap-2 border-t border-line pt-4">
-        <Button onClick={() => open('editContact', c.id)}>Edit</Button>
-        <Button variant="danger" onClick={() => setConfirm(true)}>
+        <Button write onClick={() => open('editContact', c.id)}>Edit</Button>
+        <Button variant="danger" write onClick={() => setConfirm(true)}>
           Hapus
         </Button>
       </div>
