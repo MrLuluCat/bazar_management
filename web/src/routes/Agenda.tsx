@@ -46,6 +46,17 @@ export default function Agenda() {
     if (target) document.getElementById(`d-${target.date}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }, [scrollToToday, data, groups, today])
 
+  // After saving an event: ?f=<date> scrolls to that date, then clears itself.
+  const focus = params.get('f')
+  useEffect(() => {
+    if (!focus || !data) return
+    document.getElementById(`d-${focus}`)?.scrollIntoView({ block: 'start' })
+    const p = new URLSearchParams(params)
+    p.delete('f')
+    setParams(p, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus, data])
+
   const goToday = () => {
     setMonth(today.slice(0, 7))
     setScrollToToday((n) => n + 1)

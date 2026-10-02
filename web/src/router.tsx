@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 import { AppShell } from './components/AppShell'
 import Agenda from './routes/Agenda'
+import EventDetail from './routes/EventDetail'
 import DesignSandbox from './routes/DesignSandbox'
 import Placeholder from './routes/Placeholder'
 import Settings from './routes/Settings'
@@ -13,7 +14,7 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { path: '/', element: <Agenda /> },
-      { path: '/event/:id', element: <Placeholder title="Event" /> },
+      { path: '/event/:id', element: <EventDetail /> },
       { path: '/contacts', element: <Placeholder title="Kontak" /> },
       { path: '/contacts/:id', element: <Placeholder title="Kontak" /> },
       { path: '/settings', element: <Settings /> },

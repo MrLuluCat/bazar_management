@@ -33,3 +33,6 @@ export function formatTimeRange(start: string, end: string): string {
   if (end) return `s/d ${end}`
   return ''
 }
+
+/** "12 Okt" */
+export const formatDayMonth = (date: string) => format(toDate(date), "d MMM", { locale: id })
