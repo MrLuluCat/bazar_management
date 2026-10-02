@@ -25,3 +25,11 @@ export function monthRange(ym: string): { start: string; end: string } {
 export function todayJakarta(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date())
 }
+
+/** "06:00–10:00" | "06:00" | "s/d 10:00" | "" */
+export function formatTimeRange(start: string, end: string): string {
+  if (start && end) return `${start}–${end}`
+  if (start) return start
+  if (end) return `s/d ${end}`
+  return ''
+}

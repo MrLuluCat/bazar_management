@@ -1,62 +1,64 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
-html {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-size: 15px;
-  line-height: 1.45;
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
-}
+@layer base {
+  html {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  background: var(--paper);
-  color: var(--ink);
-}
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--paper);
+    color: var(--ink);
+  }
 
-h1, h2, h3 {
-  margin: 0;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  text-wrap: balance;
-}
+  h1, h2, h3 {
+    margin: 0;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
 
-button, input, select, textarea {
-  font: inherit;
-  color: inherit;
-}
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+  }
 
-.num {
-  font-variant-numeric: tabular-nums;
-}
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
 
-/* Browser surfaces themed from the palette. */
-::selection {
-  background: var(--accent-wash);
-  color: var(--ink);
-}
+  /* Browser surfaces themed from the palette. */
+  ::selection {
+    background: var(--accent-wash);
+    color: var(--ink);
+  }
 
-input, textarea {
-  caret-color: var(--accent);
-}
+  input, textarea {
+    caret-color: var(--accent);
+  }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 
-a {
-  color: var(--accent);
-  text-underline-offset: 3px;
-}
+  a {
+    color: var(--accent);
+    text-underline-offset: 3px;
+  }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

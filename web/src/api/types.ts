@@ -37,3 +37,5 @@ export type PaymentRecord = {
   note: string
   proof: string
 }
+
+export type EventWithPayments = EventRecord & { payments: PaymentRecord[] }
