@@ -23,7 +23,11 @@ test('Kalender: dots on event days, tap day opens the list, choice persists', as
 
   await page.reload()
   await expect(page.getByRole('radio', { name: 'Kalender', checked: true })).toBeVisible()
-  await page.keyboard.press('Escape') // the selected day (URL state) reopens its sheet on mobile
+  // The selected day (URL state) reopens its sheet on mobile: wait for it before closing, or Escape can land first.
+  const reopened = page.getByRole('dialog', { name: /Event 24 Okt/ })
+  if (test.info().project.name === 'mobile') await expect(reopened).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(reopened).toBeHidden()
   await page.getByRole('radio', { name: 'Agenda' }).click()
   await expect(page.locator('#d-2026-10-24')).toBeVisible()
 })
