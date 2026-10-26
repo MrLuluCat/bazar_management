@@ -13,6 +13,12 @@ onBootstrap((e) => {
 
 // ---- public ----
 
+// Lapak picker on the start screen: names + links only (login emails stay behind /api/lapak/{slug}).
+routerAdd('GET', '/api/lapak', (e) => {
+  const items = e.app.findRecordsByFilter('workspaces', '', 'name', 0, 0).map((ws) => ({ name: ws.getString('name'), slug: ws.getString('slug') }))
+  return e.json(200, { items })
+})
+
 routerAdd('GET', '/api/lapak/{slug}', (e) => {
   const L = require(`${__hooks}/lib/admin.js`)
   const slug = e.request.pathValue('slug')

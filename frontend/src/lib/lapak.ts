@@ -31,6 +31,22 @@ export async function fetchLapak(slug: string): Promise<Lapak | null> {
   return (await res.json()) as Lapak
 }
 
+/** All lapak for the start-screen picker (name + link slug). */
+export async function fetchLapakList(): Promise<Pick<Lapak, 'name' | 'slug'>[]> {
+  const base = import.meta.env.VITE_PB_URL || ''
+  const res = await fetch(`${base}/api/lapak`)
+  if (!res.ok) throw new Error(String(res.status))
+  return ((await res.json()) as { items: Pick<Lapak, 'name' | 'slug'>[] }).items
+}
+
+export function forgetLapak(): void {
+  try {
+    localStorage.removeItem(KEY)
+  } catch {
+    /* storage blocked */
+  }
+}
+
 export function lapakUrl(slug: string): string {
   return `${window.location.origin}/l/${slug}`
 }

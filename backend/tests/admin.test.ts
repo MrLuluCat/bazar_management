@@ -72,6 +72,11 @@ describe('admin routes', () => {
     expect((await panel.req('POST', '/api/admin/lapak', { name: 'X', slug: 'lapak-rina', passcode: 'abcdef' })).status).toBe(400)
   })
 
+  it('public lapak list shows names and links only', async () => {
+    const r = await anon.req('GET', '/api/lapak')
+    expect(r.data.items).toEqual([{ name: 'Lapak Rina', slug: 'lapak-rina' }])
+  })
+
   it('lapak lookup by slug returns name and login email; unknown is 404', async () => {
     const r = await anon.req('GET', '/api/lapak/lapak-rina')
     expect(r.data).toEqual({ name: 'Lapak Rina', slug: 'lapak-rina', email: 'lapak-lapak-rina@bazar.local' })

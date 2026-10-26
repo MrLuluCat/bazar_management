@@ -25,6 +25,7 @@ The owner runs one server (VPS, PocketBase serving app + API). After the server 
 ## API (`pb_hooks/admin.pb.js`, helpers in `pb_hooks/lib/admin.js`)
 
 Public:
+- `GET /api/lapak` → `{ items: [{ name, slug }] }` for the start-screen picker (owner request 2026-10-26: lapak names are visible to anyone who opens the site; data still needs the passcode).
 - `GET /api/lapak/{slug}` → `{ name, email }` or 404.
 - `GET /api/admin/setup` → `{ needed: boolean }`.
 - `POST /api/admin/setup` `{ token, email, password }` → creates the first admin, deletes the token. 403 if an admin exists or token wrong/expired.
