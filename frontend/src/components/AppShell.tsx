@@ -1,5 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
-import { Plus } from 'lucide-react'
+import { MessagesSquare, Plus } from 'lucide-react'
+import { useAiStatus } from '../api/ai'
+import { AssistantPanel } from './assistant/AssistantPanel'
+import { assistant } from './assistant/store'
 import { useAuth } from '../hooks/useAuth'
 import { useShortcuts } from '../hooks/useShortcuts'
 import { useOnline } from '../hooks/useOnline'
@@ -22,6 +25,7 @@ export function AppShell() {
   const ws = useWorkspace()
   const { pathname } = useLocation()
   const { params, open } = useOverlay()
+  const ai = useAiStatus()
   const sel = params.get('sel')
   const add = () => open('new', 'event', sel && pathname === '/' ? { date: sel } : {})
   useShortcuts({ n: () => CAN_ADD(pathname) && online && add() })
@@ -33,12 +37,20 @@ export function AppShell() {
         <OfflineBanner />
         <header className="sticky top-0 z-20 flex min-h-[52px] items-center justify-between gap-3 border-b border-line bg-paper px-4 pt-[env(safe-area-inset-top)]">
           <span className="truncate text-base font-semibold">{ws.data?.name ?? ' '}</span>
-          {CAN_ADD(pathname) && (
-            <Button variant="primary" write onClick={add} className="max-lg:hidden">
-              <Plus size={18} strokeWidth={1.5} aria-hidden />
-              Tambah event
-            </Button>
-          )}
+          <div className="flex shrink-0 items-center gap-2">
+            {ai.data && (
+              <Button variant="ghost" onClick={assistant.show} className="-mr-2 px-3 lg:mr-0">
+                <MessagesSquare size={18} strokeWidth={1.5} aria-hidden />
+                Asisten
+              </Button>
+            )}
+            {CAN_ADD(pathname) && (
+              <Button variant="primary" write onClick={add} className="max-lg:hidden">
+                <Plus size={18} strokeWidth={1.5} aria-hidden />
+                Tambah event
+              </Button>
+            )}
+          </div>
         </header>
         {/* Mobile: clear the bottom nav and the + button so the last row can scroll above both. */}
         <main className="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+9rem)] pt-4 lg:pb-8">
@@ -61,6 +73,7 @@ export function AppShell() {
       <BottomNav />
       <EventFormHost />
       <ContactFormHost />
+      {ai.data && <AssistantPanel />}
       <UpdatePrompt />
       <Toaster />
     </div>

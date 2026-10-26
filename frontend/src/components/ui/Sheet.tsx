@@ -15,6 +15,8 @@ type Props = {
 
 // Sheets can stack (a dialog over a form): #root stays inert until the last one closes.
 let openSheets = 0
+// Escape closes only the top sheet, even when focus fell to <body> (e.g. the focused button was removed).
+const stack: object[] = []
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
@@ -23,6 +25,8 @@ export function Sheet({ open, onClose, title, children, variant = 'sheet', foote
   const panel = useRef<HTMLDivElement>(null)
   const [dragY, setDragY] = useState(0)
   const dragStart = useRef<number | null>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     if (!open) return
@@ -35,7 +39,23 @@ export function Sheet({ open, onClose, title, children, variant = 'sheet', foote
     const root = document.getElementById('root')
     openSheets++
     root?.setAttribute('inert', '')
+    const token = {}
+    stack.push(token)
+    const onDocKey = (e: KeyboardEvent) => {
+      if (stack[stack.length - 1] !== token || e.defaultPrevented) return
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onCloseRef.current()
+      } else if (e.key === 'Tab' && panel.current && !panel.current.contains(document.activeElement)) {
+        // Focus escaped the dialog: bring it back inside.
+        e.preventDefault()
+        panel.current.querySelector<HTMLElement>(FOCUSABLE)?.focus()
+      }
+    }
+    document.addEventListener('keydown', onDocKey)
     return () => {
+      document.removeEventListener('keydown', onDocKey)
+      stack.splice(stack.indexOf(token), 1)
       if (--openSheets === 0) root?.removeAttribute('inert')
       document.body.style.overflow = scroll
       previous?.focus?.()
@@ -45,11 +65,6 @@ export function Sheet({ open, onClose, title, children, variant = 'sheet', foote
   if (!open) return null
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.stopPropagation()
-      onClose()
-      return
-    }
     if (e.key !== 'Tab' || !panel.current) return
     const items = [...panel.current.querySelectorAll<HTMLElement>(FOCUSABLE)]
     if (items.length === 0) return

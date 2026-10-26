@@ -52,6 +52,17 @@ for (const theme of ['light', 'dark'] as const) {
     await scan(page, 'event form')
     await page.keyboard.press('Escape')
 
+    await page.goto('/?m=2026-10')
+    await page.getByRole('button', { name: 'Asisten' }).click()
+    const panel = page.getByRole('dialog', { name: 'Asisten' })
+    await panel.getByLabel('Pesan untuk asisten').fill(`poster ${theme}`)
+    await panel.getByLabel('Pesan untuk asisten').press('Enter')
+    await expect(panel.getByRole('article')).toBeVisible()
+    await scan(page, 'assistant')
+    if (theme === 'light') await page.screenshot({ path: `test-results/assistant-${test.info().project.name}.png` })
+    await panel.getByRole('button', { name: 'Buang' }).click()
+    await page.keyboard.press('Escape')
+
     await page.goto('/admin/login')
     await expect(page.getByLabel('Email')).toBeVisible()
     await scan(page, 'admin login')

@@ -56,6 +56,19 @@ Tanpa data contoh: `./setup.sh`. Data contoh ada di Oktober dan November 2026.
 
 Setiap lapak dibuka lewat link-nya sendiri (`/l/<link-lapak>`). Perangkat mengingat lapak terakhir, jadi berikutnya cukup buka aplikasi.
 
+### Asisten AI (opsional)
+
+Tombol **Asisten** di aplikasi: tanya agenda/pembayaran, atau kirim foto poster, chat panitia, bukti transfer. Asisten menyiapkan usulan event, pembayaran atau kontak; pengguna yang menekan Simpan.
+
+Aktifkan dengan kunci InferHub di `backend/.env` (tidak di-commit), lalu restart `./dev.sh`:
+
+```bash
+cp backend/.env.example backend/.env
+# isi INFERHUB_API_KEY=... (opsional: INFERHUB_MODEL, INFERHUB_BASE_URL)
+```
+
+Tanpa kunci, tombol Asisten tidak muncul. Isi pesan, foto dan data agenda/kontak yang dibaca asisten dikirim ke InferHub.
+
 ### Panel admin
 
 Semua urusan lapak lewat **/admin**, tanpa terminal:

@@ -11,13 +11,13 @@ export const ADMIN = { email: 'admin@test.local', password: 'admin-password-123'
 
 export type Server = { url: string; dir: string; proc: ChildProcess; log: () => string; stop(): Promise<void> }
 
-export async function startServer(port: number): Promise<Server> {
+export async function startServer(port: number, env: Record<string, string> = {}): Promise<Server> {
   const dir = mkdtempSync(path.join(tmpdir(), 'bazar-pb-'))
   const migrationsDir = path.join(BACKEND, 'pb_migrations')
   const base = [`--dir=${dir}`, `--migrationsDir=${migrationsDir}`, `--hooksDir=${path.join(BACKEND, 'pb_hooks')}`]
   const up = spawnSync(BIN, ['superuser', 'upsert', ADMIN.email, ADMIN.password, ...base], { encoding: 'utf8' })
   if (up.status !== 0) throw new Error('superuser upsert failed: ' + up.stderr + up.stdout)
-  const proc = spawn(BIN, ['serve', `--http=127.0.0.1:${port}`, ...base], { stdio: ['ignore', 'pipe', 'pipe'] })
+  const proc = spawn(BIN, ['serve', `--http=127.0.0.1:${port}`, ...base], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, INFERHUB_API_KEY: '', ...env } })
   let out = ''
   proc.stdout!.on('data', (d) => (out += d))
   proc.stderr!.on('data', (d) => (out += d))

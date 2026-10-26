@@ -9,6 +9,8 @@ Group=bazar
 WorkingDirectory=/opt/bazar
 # pb_public/ (frontend), pb_migrations/, pb_hooks/ and pb_data/ are resolved next to the binary.
 # App and API share one origin, so no CORS setting is needed.
+# INFERHUB_* (AI assistant key, model). Optional: '-' = start without it.
+EnvironmentFile=-/opt/bazar/.env
 ExecStart=/opt/bazar/pocketbase serve --http=127.0.0.1:8090
 Restart=always
 RestartSec=3

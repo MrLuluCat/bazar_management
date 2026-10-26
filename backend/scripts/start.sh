@@ -4,6 +4,8 @@
 set -euo pipefail
 BACKEND="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$BACKEND"
+# backend/.env (not committed): INFERHUB_* for the AI assistant.
+if [ -f .env ]; then set -a; . <(tr -d "" < .env); set +a; fi  # tr: tolerate CRLF from Windows editors
 source "$BACKEND/scripts/pb-version.sh"
 ensure_pocketbase
 

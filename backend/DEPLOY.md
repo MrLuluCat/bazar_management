@@ -14,7 +14,8 @@ Status: file ini belum pernah dicoba di VPS sungguhan.
 ├─ pb_public/        hasil build frontend (dikirim deploy.sh)
 ├─ pb_migrations/    dari repo (otomatis dijalankan saat start)
 ├─ pb_hooks/         dari repo
-└─ pb_data/          database + upload (JANGAN ditimpa saat deploy)
+├─ pb_data/          database + upload (JANGAN ditimpa saat deploy)
+└─ .env              opsional: INFERHUB_* untuk asisten AI (chmod 600)
 ```
 
 ## 1. Install pertama (di VPS)
@@ -84,6 +85,21 @@ ssh -L 8090:127.0.0.1:8090 you@vps
 ```
 
 Lupa password admin panel: lewat tunnel, buka koleksi `admins` di `/_/` dan ganti password-nya (atau hapus admin, restart service, dan pakai link setup baru).
+
+## Asisten AI (opsional)
+
+Kunci InferHub hanya di server, di `/opt/bazar/.env` (dibaca systemd):
+
+```bash
+sudo tee /opt/bazar/.env >/dev/null <<'ENV'
+INFERHUB_API_KEY=isi-kunci-anda
+INFERHUB_MODEL=cb/deepseek-v4.1-flash
+ENV
+sudo chown bazar:bazar /opt/bazar/.env && sudo chmod 600 /opt/bazar/.env
+sudo systemctl restart bazar
+```
+
+Daftar variabel lengkap: `backend/.env.example`. Tanpa kunci, tombol Asisten tidak muncul di aplikasi.
 
 ## 4. Update berikutnya
 
