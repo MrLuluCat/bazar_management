@@ -1,9 +1,13 @@
 node_modules
 dist
-.pb/
 .env
+.env.local
+.env.*.local
 pb_data/
+pocketbase
+pocketbase.exe
 test-results/
 playwright-report/
 .superpowers/
+.vercel
 *.log

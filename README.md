@@ -2,163 +2,124 @@
 
 Aplikasi web (PWA, mobile-first) untuk mengatur jadwal bazar/booth per bulan: kapan, di mana, siapa yang dihubungi, dan berapa yang sudah dibayar. Bahasa antarmuka: Indonesia.
 
-Fitur: agenda per bulan + tampilan kalender, catat pembayaran cicilan (DP + pelunasan), buku kontak penanggung jawab (WhatsApp / telepon sekali ketuk), duplikat dan ulangi event, bisa dipasang di HP, dan bisa dibaca saat offline.
+Fitur: agenda per bulan + kalender, pembayaran cicilan (DP + pelunasan), buku kontak penanggung jawab (WhatsApp / telepon sekali ketuk), duplikat dan ulangi event, bisa dipasang di HP, bisa dibaca saat offline.
 
-Dokumen lain: [PRD.md](PRD.md) (spesifikasi), [DESIGN.md](DESIGN.md) (desain), [DEPLOY.md](DEPLOY.md) (pasang di server).
+## Struktur
 
-## Teknologi
-
-- Backend: [PocketBase](https://pocketbase.io) 0.40.4 (satu file program, database SQLite, API, login)
-- Frontend: React 19 + Vite + TypeScript + Tailwind CSS 4
-- Tes: Vitest, Testing Library, Playwright, axe
-
-## Yang perlu dipasang dulu
-
-| Perangkat | Versi | Cek |
-| --- | --- | --- |
-| Node.js | 20 atau lebih baru (diuji di 24) | `node -v` |
-| Git Bash (Windows) atau terminal Linux/macOS | | |
-| Google Chrome | untuk tes browser | |
-
-Windows: jalankan semua perintah di bawah di **Git Bash**, bukan CMD/PowerShell. Koneksi internet dibutuhkan saat setup (unduh PocketBase dan paket npm).
-
-## Install dan jalankan (pertama kali)
-
-Dari folder proyek:
-
-```bash
-# 1. Setup sekali jalan: unduh PocketBase, pasang paket, buat akun admin, user grup, workspace, dan data contoh
-scripts/setup-local.sh --seed
-
-# 2. Jalankan aplikasi (PocketBase + web sekaligus)
-scripts/dev.sh
+```
+backend/    PocketBase (API + database)  -> dipasang di VPS      (lihat backend/DEPLOY.md)
+frontend/   React + Vite (PWA)           -> dipasang di Vercel   (lihat frontend/DEPLOY.md)
+setup.sh    setup lokal sekali jalan (backend + frontend)
+dev.sh      jalankan backend + frontend sekaligus
+PRD.md, DESIGN.md, PRODUCT.md   spesifikasi dan desain
 ```
 
-Buka **http://localhost:5173** dan masuk dengan kode akses **`bazar-123`**.
+Detail tiap bagian:
 
-Hentikan dengan `Ctrl+C`.
+```
+backend/
+  pb_migrations/   skema database + aturan akses (otomatis dijalankan PocketBase)
+  pb_hooks/        kosong (cadangan)
+  scripts/         setup.sh, dev.sh, bootstrap.js, seed.js, deploy.sh, pb-version.sh
+  deploy/          bazar.service (systemd), nginx.bazar.conf
+  tests/           tes aturan akses
+  pocketbase(.exe) + pb_data/   diunduh/dibuat saat setup, tidak di-commit
+frontend/
+  src/lib/         logika murni: uang, telepon, tanggal, pembayaran, pengulangan
+  src/api/         akses data (PocketBase SDK + TanStack Query)
+  src/components/  komponen UI; ui/ = komponen dasar
+  src/routes/      halaman
+  e2e/, e2e-pwa/   tes browser
+  vercel.json      konfigurasi Vercel
+```
 
-Tanpa data contoh: jalankan `scripts/setup-local.sh` tanpa `--seed`. Data contoh berisi event di Oktober dan November 2026, jadi pindah bulan dengan tombol panah di agenda.
+## Yang perlu dipasang
 
-### Ganti kode akses, email atau nama
+- Node.js 20 atau lebih baru (`node -v`)
+- Windows: **Git Bash** (semua perintah di bawah dijalankan di Git Bash, bukan CMD/PowerShell)
+- Google Chrome (untuk tes browser)
+- Internet saat setup (unduh PocketBase dan paket npm)
 
-Setup memakai nilai bawaan ini. Ganti lewat variabel lingkungan sebelum menjalankan setup:
+## Jalankan di lokal
 
 ```bash
-GROUP_PASSCODE='kode-baru-min-6' WORKSPACE_NAME='Lapak Rina' scripts/setup-local.sh
+./setup.sh --seed     # sekali: unduh PocketBase, buat akun, workspace, data contoh, npm install
+./dev.sh              # tiap kali: backend :8090 + frontend :5173 (Ctrl+C menghentikan keduanya)
+```
+
+Buka **http://localhost:5173**, kode akses **`bazar-123`**. Data contoh ada di Oktober dan November 2026.
+
+Tanpa data contoh: `./setup.sh`.
+
+| Alamat | Isi |
+| --- | --- |
+| http://localhost:5173 | aplikasi |
+| http://127.0.0.1:8090/_/ | panel admin PocketBase (`admin@local.test` / `admin-pass-123`) |
+
+### Jalankan terpisah
+
+```bash
+cd backend && npm run dev      # terminal 1: PocketBase
+cd frontend && npm run dev     # terminal 2: web
+```
+
+Di lokal, frontend mem-proxy `/api` ke `http://127.0.0.1:8090` (`VITE_PB_URL` kosong di `frontend/.env.local`).
+
+### Ganti kode akses / nama
+
+```bash
+GROUP_PASSCODE='kode-baru-min-6' WORKSPACE_NAME='Lapak Rina' ./setup.sh
 ```
 
 | Variabel | Bawaan |
 | --- | --- |
-| `GROUP_PASSCODE` | `bazar-123` (kode akses, minimal 6 karakter) |
-| `GROUP_EMAIL` | `grup@bazar.local` (tersimpan di `web/.env.local`) |
+| `GROUP_PASSCODE` | `bazar-123` (minimal 6 karakter) |
+| `GROUP_EMAIL` | `grup@bazar.local` (harus sama dengan `VITE_GROUP_EMAIL` di `frontend/.env.local`) |
 | `WORKSPACE_NAME` | `Bazar Saya` |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@local.test` / `admin-pass-123` |
 
-Nama lapak juga bisa diganti dari menu Pengaturan di aplikasi.
-
-### Mulai dari nol lagi
-
-Hapus database lokal lalu setup ulang:
+### Reset database lokal
 
 ```bash
-rm -rf .pb/data
-scripts/setup-local.sh --seed
+rm -rf backend/pb_data
+./setup.sh --seed
 ```
 
-## Setiap kali mau pakai
+## Deploy
+
+1. Backend ke VPS: [backend/DEPLOY.md](backend/DEPLOY.md)
+2. Frontend ke Vercel: [frontend/DEPLOY.md](frontend/DEPLOY.md)
+3. Hubungkan: `VITE_PB_URL` (Vercel) = URL API, dan `BAZAR_ORIGINS` (VPS) = URL Vercel.
+
+## Tes
 
 ```bash
-scripts/dev.sh
-```
-
-- Aplikasi: http://localhost:5173
-- API PocketBase: http://127.0.0.1:8090
-- Panel admin PocketBase: http://127.0.0.1:8090/_/ (login `admin@local.test`)
-
-### Jalankan manual (tanpa dev.sh)
-
-Terminal A:
-
-```bash
-.pb/pocketbase.exe serve --http=127.0.0.1:8090 --dir=.pb/data --migrationsDir=pb/pb_migrations
-```
-
-(di Linux/macOS: `.pb/pocketbase`)
-
-Terminal B:
-
-```bash
-cd web
-npm run dev
+cd backend  && npm test            # aturan akses PocketBase
+cd frontend && npm test            # unit + komponen
+cd frontend && npm run e2e         # browser (mobile + desktop); hentikan ./dev.sh dulu (port sama)
+cd frontend && npm run e2e:pwa     # offline/PWA pada hasil build
 ```
 
 ## Cara pakai singkat
 
-1. **Masuk** dengan kode akses.
-2. **Tambah event**: tombol `+` (HP) atau tombol "Tambah event" (desktop), atau tekan `n`. Isi judul, tanggal, lokasi, biaya booth. Pilih kontak atau buat kontak baru di formulir yang sama.
-3. **Ulangi**: centang "Ulangi" saat membuat event, pilih frekuensi dan tanggal akhir, hilangkan centang pada tanggal yang tidak diinginkan.
-4. **Catat pembayaran**: buka event, "Catat pembayaran" untuk DP, "Lunasi" untuk mengisi sisa otomatis.
-5. **Duplikat**: buka event, "Duplikat", pilih beberapa tanggal. Pembayaran tidak ikut disalin.
-6. **Kontak**: menu Kontak. Ketuk WhatsApp atau Telepon untuk langsung menghubungi.
-7. **Kalender**: di agenda, pilih "Kalender". Ketuk tanggal untuk melihat event hari itu.
-8. **Kunci**: Pengaturan, "Kunci". Ini juga menghapus data tersimpan di perangkat.
+1. Masuk dengan kode akses.
+2. Tambah event: tombol `+` (HP) / "Tambah event" (desktop) / tekan `n`.
+3. Ulangi: centang "Ulangi" di formulir, pilih frekuensi dan tanggal akhir.
+4. Catat pembayaran: buka event, "Catat pembayaran" atau "Lunasi".
+5. Duplikat: buka event, "Duplikat", pilih tanggal (pembayaran tidak disalin).
+6. Kontak: menu Kontak, ketuk WhatsApp / Telepon.
+7. Kalender: di agenda pilih "Kalender".
+8. Kunci: Pengaturan, "Kunci" (menghapus data tersimpan di perangkat).
 
-Pintasan keyboard (desktop): `n` event baru, `←` `→` pindah bulan, `t` ke hari ini, `/` cari.
-
-Pasang di HP: Chrome menu "Install app"; iPhone Safari: Bagikan, "Tambah ke Layar Utama". Fitur PWA (offline, pasang) hanya aktif pada hasil build, bukan di `npm run dev`.
-
-## Menjalankan tes
-
-Semua dari folder `web`:
-
-```bash
-cd web
-npm test             # tes unit dan komponen (cepat)
-npm run test:rules   # tes aturan akses PocketBase (menjalankan PocketBase sementara di port 8091/8092)
-npm run e2e          # tes browser Chrome (mobile + desktop), butuh port 5173 dan 8090 kosong
-npm run e2e:pwa      # tes offline/PWA pada hasil build, butuh port 4173 dan 8090 kosong
-npx tsc --noEmit     # cek tipe
-```
-
-Tes `e2e` membuat database sementara sendiri; database lokal Anda tidak tersentuh. Hentikan `scripts/dev.sh` dulu sebelum menjalankan `e2e` karena port sama.
-
-## Struktur folder
-
-```
-pb/pb_migrations/   skema database + aturan akses (JS, otomatis dijalankan PocketBase)
-pb/tests/           tes aturan akses
-scripts/            setup-local.sh, dev.sh, bootstrap.js, seed.js, deploy.sh, gen-icons.mjs
-deploy/             bazar.service (systemd), nginx.bazar.conf
-web/src/lib/        logika murni: uang, telepon, tanggal, pembayaran, pengulangan
-web/src/api/        akses data (PocketBase + TanStack Query)
-web/src/components/ komponen UI; ui/ = komponen dasar
-web/src/routes/     halaman
-web/e2e/            tes browser
-.pb/                program + data PocketBase lokal (tidak di-commit)
-```
-
-## Build produksi dan pasang di server
-
-```bash
-cd web
-VITE_GROUP_EMAIL=grup@bazar.local npm run build   # hasil di web/dist
-```
-
-Langkah lengkap pemasangan di VPS (Nginx, systemd, backup): lihat [DEPLOY.md](DEPLOY.md). Catatan: langkah itu belum pernah dicoba di server sungguhan.
+Pintasan desktop: `n` event baru, `←` `→` pindah bulan, `t` hari ini, `/` cari. Fitur offline dan pasang di HP hanya aktif di hasil build (Vercel), bukan `npm run dev`.
 
 ## Masalah umum
 
-| Gejala | Penyebab / solusi |
+| Gejala | Solusi |
 | --- | --- |
-| `scripts/setup-local.sh: command not found` atau error `\r` | Jalankan di Git Bash dari folder proyek. Jika file terkonversi CRLF: `sed -i 's/\r$//' scripts/*.sh` |
-| Login selalu "Kode salah" | Kode akses salah, atau `web/.env.local` berisi email berbeda dari `GROUP_EMAIL` saat setup. Setelah ubah `.env.local`, restart `scripts/dev.sh` |
-| Login diblokir sebentar | Batas 5 percobaan per 60 detik. Tunggu semenit |
-| `Port 8090/5173 already in use` | Ada proses lama. Tutup terminal lama atau di PowerShell: `Get-NetTCPConnection -LocalPort 8090 -State Listen \| % { Stop-Process -Id $_.OwningProcess -Force }` |
-| Halaman kosong / "Workspace tidak ditemukan" | Setup belum dijalankan atau database terhapus. Ulangi `scripts/setup-local.sh --seed` |
-| Tes e2e gagal mulai | Pastikan Chrome terpasang dan port 5173/8090 kosong |
-| Event bulan ini kosong padahal ada data contoh | Data contoh ada di Okt dan Nov 2026; pindah bulan |
-
-## Lisensi
-
-Belum ditentukan.
+| `./setup.sh: Permission denied` / error `\r` | Jalankan di Git Bash: `bash setup.sh --seed`. Bila CRLF: `sed -i 's/\r$//' *.sh backend/scripts/*.sh` |
+| Login "Kode salah" | Kode salah, atau `VITE_GROUP_EMAIL` beda dengan `GROUP_EMAIL` saat setup. Restart `./dev.sh` setelah ubah `.env.local` |
+| Login diblokir | Batas 5 kali / 60 detik. Tunggu semenit |
+| Port 8090/5173 terpakai | PowerShell: `Get-NetTCPConnection -LocalPort 8090,5173 -State Listen \| % { Stop-Process -Id $_.OwningProcess -Force }` |
+| "Workspace tidak ditemukan" | Setup belum jalan atau `backend/pb_data` terhapus: `./setup.sh --seed` |
+| Di Vercel: error jaringan / CORS | Domain Vercel belum ada di `BAZAR_ORIGINS` di VPS |

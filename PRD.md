@@ -150,7 +150,7 @@ All collections: `created`, `updated` autodate.
 
 Implementer: verify exact `?=` + `@collection` join syntax against installed PocketBase version docs; write rule tests (§9) hitting API as anon + as member + as non-member user.
 
-**Bootstrap** (one-time, `scripts/bootstrap.js` via `pocketbase` JS migration or CLI): create superuser, group user (email from env, passcode from env), workspace, owner membership. Idempotent.
+**Bootstrap** (one-time, `backend/scripts/bootstrap.js` via `pocketbase` JS migration or CLI): create superuser, group user (email from env, passcode from env), workspace, owner membership. Idempotent.
 
 **Derived (client, `lib/payment.ts`)**: `paid`, `remaining`, `paymentStatus` per F5. Monthly summary sums active events only.
 
