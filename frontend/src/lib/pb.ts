@@ -1,7 +1,7 @@
 import PocketBase from 'pocketbase'
 import { clearLocalData } from './queryClient'
 
-// VITE_PB_URL = backend URL (e.g. https://api-bazar.example.com). Empty = same origin (local dev proxies /api to :8090).
+// VITE_PB_URL = backend URL, only if the API lives on another host. Empty = same origin (PocketBase serves the app; dev proxies /api to :8090).
 export const pb = new PocketBase(import.meta.env.VITE_PB_URL || window.location.origin)
 pb.autoCancellation(false)
 

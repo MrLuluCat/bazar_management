@@ -7,10 +7,10 @@ Fitur: agenda per bulan + kalender, pembayaran cicilan (DP + pelunasan), buku ko
 ## Struktur
 
 ```
-backend/    PocketBase (API + database)  -> dipasang di VPS      (lihat backend/DEPLOY.md)
-frontend/   React + Vite (PWA)           -> dipasang di Vercel   (lihat frontend/DEPLOY.md)
+backend/    PocketBase (API + database), juga menyajikan aplikasi dari pb_public/
+frontend/   React + Vite (PWA), di-build ke backend/pb_public/
 setup.sh    setup lokal sekali jalan (backend + frontend)
-dev.sh      jalankan backend + frontend sekaligus
+dev.sh      mode develop: backend :8090 + frontend :5173 (hot reload)
 PRD.md, DESIGN.md, PRODUCT.md   spesifikasi dan desain
 ```
 
@@ -23,14 +23,13 @@ backend/
   scripts/         setup.sh, dev.sh, bootstrap.js, seed.js, deploy.sh, pb-version.sh
   deploy/          bazar.service (systemd), nginx.bazar.conf
   tests/           tes aturan akses
-  pocketbase(.exe) + pb_data/   diunduh/dibuat saat setup, tidak di-commit
+  pocketbase(.exe) + pb_data/ + pb_public/   diunduh/dibuat lokal, tidak di-commit
 frontend/
   src/lib/         logika murni: uang, telepon, tanggal, pembayaran, pengulangan
   src/api/         akses data (PocketBase SDK + TanStack Query)
   src/components/  komponen UI; ui/ = komponen dasar
   src/routes/      halaman
   e2e/, e2e-pwa/   tes browser
-  vercel.json      konfigurasi Vercel
 ```
 
 ## Yang perlu dipasang
@@ -55,6 +54,14 @@ Tanpa data contoh: `./setup.sh`.
 | --- | --- |
 | http://localhost:5173 | aplikasi |
 | http://127.0.0.1:8090/_/ | panel admin PocketBase (`admin@local.test` / `admin-pass-123`) |
+
+### Mode produksi di lokal (satu server, seperti di VPS)
+
+```bash
+cd backend && npm start     # build frontend ke pb_public/, lalu PocketBase :8090
+```
+
+Buka **http://127.0.0.1:8090**: aplikasi, API dan panel admin (`/_/`) di satu alamat. Fitur offline dan pasang di HP aktif di mode ini.
 
 ### Jalankan terpisah
 
@@ -87,9 +94,11 @@ rm -rf backend/pb_data
 
 ## Deploy
 
-1. Backend ke VPS: [backend/DEPLOY.md](backend/DEPLOY.md)
-2. Frontend ke Vercel: [frontend/DEPLOY.md](frontend/DEPLOY.md)
-3. Hubungkan: `VITE_PB_URL` (Vercel) = URL API, dan `BAZAR_ORIGINS` (VPS) = URL Vercel.
+Satu server di VPS (PocketBase menyajikan aplikasi + API di satu domain): [backend/DEPLOY.md](backend/DEPLOY.md).
+
+```bash
+cd backend && DEPLOY_HOST=you@vps npm run deploy   # build frontend + kirim + restart
+```
 
 ## Tes
 
@@ -111,7 +120,7 @@ cd frontend && npm run e2e:pwa     # offline/PWA pada hasil build
 7. Kalender: di agenda pilih "Kalender".
 8. Kunci: Pengaturan, "Kunci" (menghapus data tersimpan di perangkat).
 
-Pintasan desktop: `n` event baru, `←` `→` pindah bulan, `t` hari ini, `/` cari. Fitur offline dan pasang di HP hanya aktif di hasil build (Vercel), bukan `npm run dev`.
+Pintasan desktop: `n` event baru, `←` `→` pindah bulan, `t` hari ini, `/` cari. Fitur offline dan pasang di HP hanya aktif di hasil build (`cd backend && npm start`, atau di VPS), bukan `./dev.sh`.
 
 ## Masalah umum
 
@@ -122,4 +131,3 @@ Pintasan desktop: `n` event baru, `←` `→` pindah bulan, `t` hari ini, `/` ca
 | Login diblokir | Batas 5 kali / 60 detik. Tunggu semenit |
 | Port 8090/5173 terpakai | PowerShell: `Get-NetTCPConnection -LocalPort 8090,5173 -State Listen \| % { Stop-Process -Id $_.OwningProcess -Force }` |
 | "Workspace tidak ditemukan" | Setup belum jalan atau `backend/pb_data` terhapus: `./setup.sh --seed` |
-| Di Vercel: error jaringan / CORS | Domain Vercel belum ada di `BAZAR_ORIGINS` di VPS |

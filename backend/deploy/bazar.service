@@ -1,5 +1,5 @@
 [Unit]
-Description=Bazar Manager API (PocketBase)
+Description=Bazar Manager (PocketBase: app + API)
 After=network.target
 
 [Service]
@@ -7,10 +7,9 @@ Type=simple
 User=bazar
 Group=bazar
 WorkingDirectory=/opt/bazar
-# BAZAR_ORIGINS = the frontend URL(s) allowed by CORS, e.g. https://bazar.vercel.app
-EnvironmentFile=/opt/bazar/.env
-# pb_migrations/, pb_hooks/ and pb_data/ are resolved next to the binary.
-ExecStart=/opt/bazar/pocketbase serve --http=127.0.0.1:8090 --origins=${BAZAR_ORIGINS}
+# pb_public/ (frontend), pb_migrations/, pb_hooks/ and pb_data/ are resolved next to the binary.
+# App and API share one origin, so no CORS setting is needed.
+ExecStart=/opt/bazar/pocketbase serve --http=127.0.0.1:8090
 Restart=always
 RestartSec=3
 LimitNOFILE=4096

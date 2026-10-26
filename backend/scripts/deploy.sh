@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-# Deploy backend changes (migrations + hooks) to the VPS and restart PocketBase.
+# Deploy to the VPS: build the frontend, upload it with migrations + hooks, restart PocketBase.
 #   DEPLOY_HOST=user@vps npm run deploy        (from the backend folder)
 # Never touches pb_data/ (database + uploads).
 set -euo pipefail
 
 : "${DEPLOY_HOST:?set DEPLOY_HOST, e.g. deploy@vps.example.com}"
 REMOTE_DIR="${REMOTE_DIR:-/opt/bazar}"
-HEALTH_URL="${HEALTH_URL:-https://api-bazar.nasfcakes.cloud/api/health}"
+HEALTH_URL="${HEALTH_URL:-https://bazar.nasfcakes.cloud/api/health}"
 BACKEND="$(cd "$(dirname "$0")/.." && pwd)"
 
-echo "==> upload migrations + hooks"
+echo "==> build frontend"
+(cd "$BACKEND/../frontend" && npm run build:pb)
+
+echo "==> upload app + migrations + hooks"
+rsync -az --delete "$BACKEND/pb_public/" "$DEPLOY_HOST:$REMOTE_DIR/pb_public/"
 rsync -az --delete "$BACKEND/pb_migrations/" "$DEPLOY_HOST:$REMOTE_DIR/pb_migrations/"
 rsync -az --delete "$BACKEND/pb_hooks/" "$DEPLOY_HOST:$REMOTE_DIR/pb_hooks/"
 

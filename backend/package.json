@@ -6,6 +6,7 @@
     "setup": "bash scripts/setup.sh",
     "setup:seed": "bash scripts/setup.sh --seed",
     "dev": "bash scripts/dev.sh",
+    "start": "bash scripts/start.sh",
     "bootstrap": "node scripts/bootstrap.js",
     "seed": "node scripts/seed.js",
     "test": "vitest run",
