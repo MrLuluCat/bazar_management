@@ -99,6 +99,24 @@ describe('AI assistant', () => {
     expect((await member.req('GET', '/api/collections/events/records')).data.totalItems).toBe(before)
   })
 
+  it('event proposals carry a new organizer, or link one that already exists by phone', async () => {
+    await member.req('POST', '/api/collections/contacts/records', { workspace: wsA, name: 'Pak Budi', phone: '6285711112222' })
+    fake.script([
+      {
+        tool_calls: [
+          { name: 'propose_event', args: { title: 'Baru', date: '2026-12-12', location: 'X', new_contact: { name: 'Mas Andi', phone: '0813-2222-4444' } } },
+          { name: 'propose_event', args: { title: 'Lama', date: '2026-12-13', location: 'Y', new_contact: { name: 'Budi', phone: '+62 857-1111-2222' } } },
+        ],
+      },
+      { content: 'ok' },
+    ])
+    const [fresh, known] = (await ask(member, 'catat')).data.proposals
+    expect(fresh).toMatchObject({ valid: true, contact_name: 'Mas Andi', new_contact: { name: 'Mas Andi', phone: '6281322224444' } })
+    expect(known.new_contact).toBeNull()
+    expect(known.contact_name).toBe('Pak Budi')
+    expect(known.payload.contact).not.toBe('')
+  })
+
   it('passes photos to the model as image parts', async () => {
     fake.script([{ content: 'Foto terbaca.' }])
     const img = 'data:image/jpeg;base64,/9j/4AAQSkZJRg=='

@@ -39,7 +39,9 @@ export function ProposalCard({ p, bubbleId, state }: { p: Proposal; bubbleId: nu
     try {
       let to = ''
       if (p.kind === 'event') {
-        const r = await pb.collection('events').create({ ...p.payload, contact: p.payload.contact || '', status: 'active', workspace: ws.data.id })
+        let contact = p.payload.contact || ''
+        if (p.new_contact) contact = (await pb.collection('contacts').create({ ...p.new_contact, workspace: ws.data.id })).id
+        const r = await pb.collection('events').create({ ...p.payload, contact, status: 'active', workspace: ws.data.id })
         to = `/event/${r.id}${thenEdit ? `?edit=${r.id}` : ''}`
       } else if (p.kind === 'contact') {
         const r = await pb.collection('contacts').create({ ...p.payload, workspace: ws.data.id })
@@ -69,7 +71,11 @@ export function ProposalCard({ p, bubbleId, state }: { p: Proposal; bubbleId: nu
           ['Waktu', formatTimeRange(p.payload.start_time, p.payload.end_time) || 'Belum diisi'],
           ['Lokasi', p.payload.location],
           ['Biaya booth', p.payload.total_cost ? formatRupiah(p.payload.total_cost) : 'Gratis'],
-          ...(p.contact_name ? ([['Kontak', p.contact_name]] as [string, string][]) : []),
+          ...(p.new_contact
+            ? ([['Kontak baru', `${p.new_contact.name} · ${formatPhone(p.new_contact.phone)}`]] as [string, string][])
+            : p.contact_name
+              ? ([['Kontak', p.contact_name]] as [string, string][])
+              : []),
         ]
       : p.kind === 'payment'
         ? [

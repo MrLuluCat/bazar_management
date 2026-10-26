@@ -6,6 +6,8 @@ export type EventProposal = {
   kind: 'event'
   payload: { title: string; date: string; start_time: string; end_time: string; location: string; total_cost: number; contact: string; notes: string }
   contact_name: string
+  /** New organizer to save together with the event (contact first, then the event linked to it). */
+  new_contact: { name: string; phone: string; organization: string; notes: string } | null
   valid: boolean
   errors: string[]
   reason: string

@@ -37,13 +37,24 @@ function history(): ChatTurn[] {
   return turns.slice(-20)
 }
 
+/** The prompt asks for plain text; drop markdown the model still sends (bold, headings, table rules). */
+export function plain(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\|?\s*:?-{3,}.*$/gm, '')
+    .replace(/^\|\s*(.*?)\s*\|$/gm, (_, row: string) => '• ' + row.split('|').map((c) => c.trim()).filter(Boolean).join(' · '))
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 async function run() {
   controller = new AbortController()
   set({ pending: true })
   try {
     const r = await askAssistant(history(), controller.signal)
     const states = Object.fromEntries(r.proposals.map((p) => [p.id, 'open' as ProposalState]))
-    set({ bubbles: [...state.bubbles, { id: nextId++, role: 'assistant', text: r.reply, proposals: r.proposals, states }] })
+    set({ bubbles: [...state.bubbles, { id: nextId++, role: 'assistant', text: plain(r.reply), proposals: r.proposals, states }] })
   } catch (e) {
     const err = e as AssistantError
     if (err.status !== -1) set({ bubbles: [...state.bubbles, { id: nextId++, role: 'error', text: err.message, retry: err.status !== 400 }] })
