@@ -17,15 +17,14 @@ export function EventRow({ event: e }: { event: EventWithPayments }) {
       to={`/event/${e.id}`}
       className={cn('block min-h-[44px] border-b border-line py-3 text-ink no-underline last:border-b-0', cancelled && 'text-muted')}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className={cn('truncate text-base', cancelled && 'line-through')}>{e.title}</h3>
-          <p className="num truncate text-sm text-muted">{meta}</p>
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-1">
-          <StatusBadge total={e.total_cost} payments={e.payments} cancelled={cancelled} />
-          {!cancelled && left > 0 && <span className="num text-sm font-medium">{formatRupiah(left)}</span>}
-        </div>
+      {/* Title gets the full width; the amount still owed sits right. Status leads the second line. */}
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className={cn('min-w-0 truncate text-base', cancelled && 'line-through')}>{e.title}</h3>
+        {!cancelled && left > 0 && <span className="num shrink-0 text-sm font-medium">{formatRupiah(left)}</span>}
+      </div>
+      <div className="mt-1 flex min-w-0 items-center gap-2">
+        <StatusBadge total={e.total_cost} payments={e.payments} cancelled={cancelled} />
+        {meta && <p className="num min-w-0 truncate text-sm text-muted">{meta}</p>}
       </div>
       {!cancelled && (
         <div className="mt-2">

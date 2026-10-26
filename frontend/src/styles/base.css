@@ -32,7 +32,8 @@
   }
 
   .num {
-    font-variant-numeric: tabular-nums;
+    /* Lining figures, not tabular: Schibsted's tnum also widens . : , to figure width ("Rp 50 . 000"). */
+    font-variant-numeric: lining-nums;
   }
 
   /* Browser surfaces themed from the palette. */

@@ -36,7 +36,7 @@ function Shape({ kind }: { kind: BadgeKind }): ReactNode {
 
 export function Badge({ kind, children, className }: { kind: BadgeKind; children?: ReactNode; className?: string }) {
   return (
-    <span className={cn('inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 text-xs font-medium', tone[kind], className)}>
+    <span className={cn('inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm border px-2 py-0.5 text-xs font-medium', tone[kind], className)}>
       <Shape kind={kind} />
       {children ?? label[kind]}
     </span>

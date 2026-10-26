@@ -15,7 +15,7 @@ Theme: follows `prefers-color-scheme`, overridable with `data-theme="light|dark"
 
 ## Type
 
-One family, **Schibsted Grotesk** variable (400–900), self-hosted woff2 in `web/public/fonts/`. Scale 13 / 15 / 17 / 22 / 28 px. Weights 400, 500, 650 (headings). Money, dates and times use `font-variant-numeric: tabular-nums` (class `.num`).
+One family, **Schibsted Grotesk** variable (400–900), self-hosted woff2 in `web/public/fonts/`. Scale 13 / 15 / 17 / 22 / 28 px. Weights 400, 500, 650 (headings). Money, dates and times use class `.num` (lining figures). Not tabular: Schibsted's `tnum` also widens `.` `:` `,` to figure width, which reads as `Rp 50 . 000`.
 
 ## Shape and depth
 
@@ -25,7 +25,7 @@ Radius 6 / 8 / 10 px. Borders 1 px `--line`. Elevation only on sheets and toasts
 
 - **Date stub:** small-caps weekday over a large tabular day number, a dashed vertical perforation, then the day's events.
 - **Ledger bar:** 4 px bar under each event; filled share = paid share.
-- **Status badge:** text plus shape: ○ Belum bayar, ◐ DP, ● Lunas, — Gratis, × Batal.
+- **Status badge:** never wraps; text plus shape: ○ Belum bayar, ◐ DP, ● Lunas, — Gratis, × Batal.
 
 ## Components (`web/src/components/ui/`)
 

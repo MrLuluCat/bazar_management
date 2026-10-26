@@ -40,7 +40,8 @@ export function AppShell() {
             </Button>
           )}
         </header>
-        <main className="flex-1 px-4 pb-28 pt-4 lg:pb-8">
+        {/* Mobile: clear the bottom nav and the + button so the last row can scroll above both. */}
+        <main className="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+9rem)] pt-4 lg:pb-8">
           <Outlet />
         </main>
       </div>
