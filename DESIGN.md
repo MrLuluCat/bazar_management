@@ -31,6 +31,8 @@ Radius 6 / 8 / 10 px. Borders 1 px `--line`. Elevation only on sheets and toasts
 
 Button (primary, secondary, danger, ghost; `loading`, `disabledReason`), Field + Input/Textarea/Select, RupiahInput, TimeInput, DatePicker, MultiDatePicker, Sheet (bottom sheet on mobile, modal at 768 px; focus trap, Esc, drag handle), Dialog, Toast (`toast.show`, `aria-live`), Badge, SegmentedControl, Skeleton/SkeletonRows. Dev preview: `/_sandbox`.
 
+Admin panel (`/admin`, `routes/admin/`): same tokens and components. Lapak list is a ruled ledger (name, `/l/link` in tabular numerals, event/contact counts right-aligned). Destructive actions sit last under a hairline, as `danger` buttons, and confirm through `ConfirmTyped` (type the lapak link, or `pulihkan`). No red boxes or warning cards.
+
 ## Motion
 
 150–220 ms exponential ease-out. Sheets slide up, toasts rise, list items do not stagger. `prefers-reduced-motion` collapses all durations.

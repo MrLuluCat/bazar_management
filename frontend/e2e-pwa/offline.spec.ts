@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { E2E } from '../e2e/constants'
 
 test('installable, last month renders offline, writes disabled, Lock clears caches', async ({ page, context }) => {
-  await page.goto('/unlock')
+  await page.goto(`/l/${E2E.slug}`)
   await page.getByLabel('Kode akses').fill(E2E.passcode)
   await page.getByRole('button', { name: 'Masuk' }).click()
   await expect(page.getByRole('banner').getByText('Bazar Saya')).toBeVisible()

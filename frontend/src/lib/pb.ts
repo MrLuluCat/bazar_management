@@ -1,15 +1,16 @@
 import PocketBase from 'pocketbase'
+import { getLapak } from './lapak'
 import { clearLocalData } from './queryClient'
 
 // VITE_PB_URL = backend URL, only if the API lives on another host. Empty = same origin (PocketBase serves the app; dev proxies /api to :8090).
 export const pb = new PocketBase(import.meta.env.VITE_PB_URL || window.location.origin)
 pb.autoCancellation(false)
 
-const GROUP_EMAIL = import.meta.env.VITE_GROUP_EMAIL
-
-/** Passcode = password of the group user. Throws on any failure (caller shows "Kode salah"). */
+/** Passcode = password of the remembered lapak's group user. Throws on any failure (caller shows "Kode salah"). */
 export async function unlock(passcode: string): Promise<void> {
-  await pb.collection('users').authWithPassword(GROUP_EMAIL, passcode)
+  const lapak = getLapak()
+  if (!lapak) throw new Error('no lapak')
+  await pb.collection('users').authWithPassword(lapak.email, passcode)
 }
 
 export function lock(): void {

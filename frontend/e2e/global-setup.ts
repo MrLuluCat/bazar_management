@@ -1,4 +1,4 @@
-import { E2E } from './constants'
+import { E2E, PANEL } from './constants'
 // @ts-expect-error plain JS module without types
 import { seed } from '../../backend/scripts/seed.js'
 import { ADMIN, adminToken, startServer, type Server } from '../../backend/tests/helpers'
@@ -18,6 +18,12 @@ export default async function globalSetup() {
   })
   const b = await bootstrap({ url: srv.url, adminToken: token, groupEmail: E2E.email, groupPasscode: E2E.passcode, workspaceName: 'Bazar Saya' })
   await seed({ url: srv.url, adminToken: token, workspaceId: b.workspaceId })
+  // Panel admin (normally created via the one-time setup link).
+  await fetch(srv.url + '/api/collections/admins/records', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify({ email: PANEL.email, password: PANEL.password, passwordConfirm: PANEL.password, verified: true }),
+  })
   void ADMIN
   return async () => {
     await srv?.stop()

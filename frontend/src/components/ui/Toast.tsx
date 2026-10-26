@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type ToastItem = { id: number; msg: string; action?: { label: string; onClick: () => void }; ms: number }
 type Opts = { action?: { label: string; onClick: () => void }; ms?: number }
@@ -45,7 +46,7 @@ function Item({ t }: { t: ToastItem }) {
   )
 }
 
-/** Mount once near the root. aria-live so screen readers announce new toasts. */
+/** Mount once near the root (renders into <body>). aria-live so screen readers announce new toasts. */
 export function Toaster() {
   const [, force] = useState(0)
   useEffect(() => {
@@ -53,7 +54,8 @@ export function Toaster() {
     listeners.add(l)
     return () => void listeners.delete(l)
   }, [])
-  return (
+  // Portal to <body>: an open sheet makes #root inert, and toasts must stay announced.
+  return createPortal(
     <div
       aria-live="polite"
       role="status"
@@ -62,6 +64,7 @@ export function Toaster() {
       {items.map((t) => (
         <Item key={t.id} t={t} />
       ))}
-    </div>
+    </div>,
+    document.body,
   )
 }

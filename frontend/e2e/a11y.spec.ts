@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Page } from '@playwright/test'
-import { login } from './helpers'
+import { E2E } from './constants'
+import { adminLogin, login } from './helpers'
 
 async function scan(page: Page, label: string) {
   await page.waitForTimeout(400) // let colour transitions and sheet animations settle
@@ -13,7 +14,7 @@ for (const theme of ['light', 'dark'] as const) {
   test(`axe: 0 serious/critical on every route (${theme})`, async ({ page }) => {
     await page.addInitScript((t) => localStorage.setItem('bazar.theme', t), theme)
 
-    await page.goto('/unlock')
+    await page.goto(`/l/${E2E.slug}`)
     await expect(page.getByLabel('Kode akses')).toBeVisible()
     await scan(page, 'unlock')
 
@@ -49,5 +50,26 @@ for (const theme of ['light', 'dark'] as const) {
     await page.goto('/?m=2026-10&new=event')
     await expect(page.getByRole('dialog', { name: 'Tambah event' })).toBeVisible()
     await scan(page, 'event form')
+    await page.keyboard.press('Escape')
+
+    await page.goto('/admin/login')
+    await expect(page.getByLabel('Email')).toBeVisible()
+    await scan(page, 'admin login')
+    await adminLogin(page)
+    await scan(page, 'admin lapak list')
+    await page.getByRole('button', { name: 'Lapak baru' }).click()
+    await expect(page.getByRole('dialog', { name: 'Lapak baru' })).toBeVisible()
+    await scan(page, 'admin create sheet')
+    await page.keyboard.press('Escape')
+    await page.getByRole('link', { name: /Bazar Saya/ }).click()
+    await expect(page.getByRole('heading', { name: 'Bazar Saya', level: 1 })).toBeVisible()
+    await scan(page, 'admin lapak detail')
+    await page.getByRole('button', { name: 'Hapus lapak…' }).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await scan(page, 'admin confirm')
+    await page.keyboard.press('Escape')
+    await page.getByRole('link', { name: 'Backup' }).click()
+    await expect(page.getByRole('heading', { name: 'Backup' })).toBeVisible()
+    await scan(page, 'admin backups')
   })
 }

@@ -13,6 +13,9 @@ type Props = {
   footer?: ReactNode
 }
 
+// Sheets can stack (a dialog over a form): #root stays inert until the last one closes.
+let openSheets = 0
+
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
 export function Sheet({ open, onClose, title, children, variant = 'sheet', footer }: Props) {
@@ -28,7 +31,12 @@ export function Sheet({ open, onClose, title, children, variant = 'sheet', foote
     first?.focus()
     const scroll = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    // The page behind the sheet is out of reach for pointer, keyboard and screen readers.
+    const root = document.getElementById('root')
+    openSheets++
+    root?.setAttribute('inert', '')
     return () => {
+      if (--openSheets === 0) root?.removeAttribute('inert')
       document.body.style.overflow = scroll
       previous?.focus?.()
     }

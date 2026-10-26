@@ -10,6 +10,18 @@ const lazyRoute = (load: () => Promise<{ default: React.ComponentType }>) => ({
 
 export const router = createBrowserRouter([
   { path: '/unlock', element: <Unlock /> },
+  { path: '/l/:slug', ...lazyRoute(() => import('./routes/LapakLink')) },
+  { path: '/admin/setup', ...lazyRoute(() => import('./routes/admin/AdminSetup')) },
+  { path: '/admin/login', ...lazyRoute(() => import('./routes/admin/AdminLogin')) },
+  {
+    path: '/admin',
+    ...lazyRoute(() => import('./routes/admin/AdminShell')),
+    children: [
+      { index: true, ...lazyRoute(() => import('./routes/admin/AdminLapakList')) },
+      { path: 'lapak/:id', ...lazyRoute(() => import('./routes/admin/AdminLapakDetail')) },
+      { path: 'backup', ...lazyRoute(() => import('./routes/admin/AdminBackups')) },
+    ],
+  },
   ...(import.meta.env.DEV ? [{ path: '/_sandbox', ...lazyRoute(() => import('./routes/DesignSandbox')) }] : []),
   {
     element: <AppShell />,

@@ -56,29 +56,34 @@ Skrip ini: build frontend ke `backend/pb_public/`, rsync `pb_public`, `pb_migrat
 
 Migrasi membuat semua tabel, aturan akses, batas login (5 kali / 60 detik) dan backup harian 02:00 WIB (simpan 7).
 
-`VITE_GROUP_EMAIL` dibaca saat build dari `frontend/.env.local`. Pastikan sama dengan `GROUP_EMAIL` di langkah 3.
+## 3. Buat akun admin panel (sekali)
 
-## 3. Buat superuser, user grup dan workspace
+Setelah deploy pertama, server mencetak link setup sekali pakai di log (berlaku 24 jam):
 
-Panel admin dan login superuser diblokir Nginx. Lewat SSH tunnel:
+```bash
+sudo journalctl -u bazar | grep admin/setup
+```
+
+Buka link itu (`https://bazar.nasfcakes.cloud/admin/setup?token=…`), buat email + password admin (minimal 12 karakter, simpan di password manager). Setelah itu semua lewat **https://bazar.nasfcakes.cloud/admin**: buat lapak, kirim link + kode ke tiap tim, ganti kode, kosongkan/hapus lapak, backup dan pulihkan.
+
+Link kedaluwarsa sebelum dipakai: `sudo systemctl restart bazar`, lalu ambil link baru dari log.
+
+Supaya link setup di log memakai domain yang benar, isi **Application URL** di panel bawaan PocketBase (Settings, lewat tunnel di bawah) dengan `https://bazar.nasfcakes.cloud`. Tanpa itu link tercetak dengan `http://127.0.0.1:8090`; cukup ganti bagian depannya dengan domain Anda.
+
+### Panel bawaan PocketBase (darurat)
+
+`/_/` tetap diblokir dari internet. Untuk akses database mentah, buat superuser lalu buka lewat SSH tunnel:
 
 ```bash
 # di VPS, sekali
 sudo -u bazar /opt/bazar/pocketbase superuser upsert you@example.com 'password-panjang' --dir=/opt/bazar/pb_data
-sudo systemctl restart bazar
 
-# di komputer Anda, terminal 1
+# di komputer Anda
 ssh -L 8090:127.0.0.1:8090 you@vps
-
-# terminal 2, dari folder backend
-PB_URL=http://127.0.0.1:8090 ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='password-panjang' \
-GROUP_EMAIL=grup@example.com GROUP_PASSCODE='kode-min-6' WORKSPACE_NAME='Bazar Saya' \
-npm run bootstrap
+# lalu buka http://127.0.0.1:8090/_/
 ```
 
-Kode akses (`GROUP_PASSCODE`) simpan di password manager, jangan di-commit.
-
-Panel admin: dengan tunnel aktif, buka http://127.0.0.1:8090/_/.
+Lupa password admin panel: lewat tunnel, buka koleksi `admins` di `/_/` dan ganti password-nya (atau hapus admin, restart service, dan pakai link setup baru).
 
 ## 4. Update berikutnya
 

@@ -11,6 +11,5 @@ export default defineConfig({
     url: 'http://localhost:4173',
     reuseExistingServer: false,
     timeout: 180_000,
-    env: { VITE_GROUP_EMAIL: 'grup@bazar.test' },
   },
 })

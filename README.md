@@ -46,14 +46,25 @@ frontend/
 ./dev.sh              # tiap kali: backend :8090 + frontend :5173 (Ctrl+C menghentikan keduanya)
 ```
 
-Buka **http://localhost:5173**, kode akses **`bazar-123`**. Data contoh ada di Oktober dan November 2026.
-
-Tanpa data contoh: `./setup.sh`.
+Tanpa data contoh: `./setup.sh`. Data contoh ada di Oktober dan November 2026.
 
 | Alamat | Isi |
 | --- | --- |
-| http://localhost:5173 | aplikasi |
-| http://127.0.0.1:8090/_/ | panel admin PocketBase (`admin@local.test` / `admin-pass-123`) |
+| http://localhost:5173/l/bazar-saya | lapak contoh, kode akses **`bazar-123`** |
+| http://localhost:5173/admin | **panel admin** (`admin@local.test` / `admin-pass-123`) |
+| http://127.0.0.1:8090/_/ | panel bawaan PocketBase (database mentah, akun yang sama) |
+
+Setiap lapak dibuka lewat link-nya sendiri (`/l/<link-lapak>`). Perangkat mengingat lapak terakhir, jadi berikutnya cukup buka aplikasi.
+
+### Panel admin
+
+Semua urusan lapak lewat **/admin**, tanpa terminal:
+
+- **Lapak baru**: nama, link, kode akses. Setelah dibuat, salin atau kirim link + kode lewat WhatsApp.
+- **Detail lapak**: ganti nama, ganti kode akses (semua perangkat lapak itu keluar), kosongkan data, hapus lapak.
+- **Backup**: lihat backup, buat backup sekarang, pulihkan (hanya di server Linux/VPS).
+
+Kosongkan data, hapus lapak dan pulihkan wajib diketik konfirmasinya, dan backup otomatis dibuat dulu.
 
 ### Mode produksi di lokal (satu server, seperti di VPS)
 
@@ -61,7 +72,7 @@ Tanpa data contoh: `./setup.sh`.
 cd backend && npm start     # build frontend ke pb_public/, lalu PocketBase :8090
 ```
 
-Buka **http://127.0.0.1:8090**: aplikasi, API dan panel admin (`/_/`) di satu alamat. Fitur offline dan pasang di HP aktif di mode ini.
+Buka **http://127.0.0.1:8090/l/bazar-saya** (aplikasi) atau **/admin** (panel admin): semua di satu alamat. Fitur offline dan pasang di HP aktif di mode ini.
 
 ### Jalankan terpisah
 
@@ -72,20 +83,23 @@ cd frontend && npm run dev     # terminal 2: web
 
 Di lokal, frontend mem-proxy `/api` ke `http://127.0.0.1:8090` (`VITE_PB_URL` kosong di `frontend/.env.local`).
 
-### Ganti kode akses / nama
+### Nilai bawaan setup lokal
 
 ```bash
-GROUP_PASSCODE='kode-baru-min-6' WORKSPACE_NAME='Lapak Rina' ./setup.sh
+GROUP_PASSCODE='kode-baru-min-6' WORKSPACE_NAME='Lapak Rina' WORKSPACE_SLUG='lapak-rina' ./setup.sh
 ```
 
 | Variabel | Bawaan |
 | --- | --- |
 | `GROUP_PASSCODE` | `bazar-123` (minimal 6 karakter) |
-| `GROUP_EMAIL` | `grup@bazar.local` (harus sama dengan `VITE_GROUP_EMAIL` di `frontend/.env.local`) |
-| `WORKSPACE_NAME` | `Bazar Saya` |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@local.test` / `admin-pass-123` |
+| `WORKSPACE_NAME` / `WORKSPACE_SLUG` | `Bazar Saya` / `bazar-saya` |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@local.test` / `admin-pass-123` (superuser + panel admin) |
+
+Setelah setup, lapak lain dibuat lewat panel admin.
 
 ### Reset database lokal
+
+Untuk satu lapak cukup lewat panel admin (Kosongkan data). Untuk semuanya:
 
 ```bash
 rm -rf backend/pb_data
@@ -127,7 +141,8 @@ Pintasan desktop: `n` event baru, `←` `→` pindah bulan, `t` hari ini, `/` ca
 | Gejala | Solusi |
 | --- | --- |
 | `./setup.sh: Permission denied` / error `\r` | Jalankan di Git Bash: `bash setup.sh --seed`. Bila CRLF: `sed -i 's/\r$//' *.sh backend/scripts/*.sh` |
-| Login "Kode salah" | Kode salah, atau `VITE_GROUP_EMAIL` beda dengan `GROUP_EMAIL` saat setup. Restart `./dev.sh` setelah ubah `.env.local` |
+| Login "Kode salah" | Kode salah, atau perangkat masih ingat lapak lain: buka link lapak yang benar (`/l/<link-lapak>`) |
 | Login diblokir | Batas 5 kali / 60 detik. Tunggu semenit |
 | Port 8090/5173 terpakai | PowerShell: `Get-NetTCPConnection -LocalPort 8090,5173 -State Listen \| % { Stop-Process -Id $_.OwningProcess -Force }` |
+| "Buka link lapak" di layar masuk | Perangkat belum pernah membuka link lapak. Buka `/l/<link-lapak>` dari admin |
 | "Workspace tidak ditemukan" | Setup belum jalan atau `backend/pb_data` terhapus: `./setup.sh --seed` |
